@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Pizza, ShoppingBag, Users, Tag, MessageSquare, LogOut } from 'lucide-react';
+import { LayoutDashboard, Pizza, ShoppingBag, Users, Tag, MessageSquare, LogOut, MapPin } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
@@ -11,6 +11,7 @@ const AdminLayout: React.FC = () => {
     { name: 'Orders', path: '/admin/orders', icon: <ShoppingBag className="w-5 h-5" /> },
     { name: 'Customers', path: '/admin/customers', icon: <Users className="w-5 h-5" /> },
     { name: 'Offers', path: '/admin/offers', icon: <Tag className="w-5 h-5" /> },
+    { name: 'Locations', path: '/admin/locations', icon: <MapPin className="w-5 h-5" /> },
     { name: 'Reviews', path: '/admin/reviews', icon: <MessageSquare className="w-5 h-5" /> },
   ];
 

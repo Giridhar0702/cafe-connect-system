@@ -34,8 +34,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Lora', 'serif'],
-        heading: ['Nunito', 'sans-serif'],
+        sans: ['"Google Sans"', '"Open Sans"', 'sans-serif'],
+        heading: ['"Google Sans"', '"Open Sans"', 'sans-serif'],
       }
     },
   },

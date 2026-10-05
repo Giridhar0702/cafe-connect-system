@@ -19,6 +19,7 @@ import AddFood from '../pages/Admin/AddFood';
 import EditFood from '../pages/Admin/EditFood';
 import OrdersManagement from '../pages/Admin/OrdersManagement';
 import OffersManagement from '../pages/Admin/OffersManagement';
+import LocationsManagement from '../pages/Admin/LocationsManagement';
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
             <Route path="foods/:id/edit" element={<EditFood />} />
             <Route path="orders" element={<OrdersManagement />} />
             <Route path="offers" element={<OffersManagement />} />
+            <Route path="locations" element={<LocationsManagement />} />
             {/* Additional admin routes could go here */}
           </Route>
         </Routes>

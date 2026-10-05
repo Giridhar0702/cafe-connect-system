@@ -4,71 +4,117 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useStore } from '../../store/StoreContext';
-import { CreditCard, Wallet, Banknote, MapPin, Building, Home, Sun, Moon } from 'lucide-react';
+import { CreditCard, Wallet, Banknote, MapPin, Building, Home, Sun, Moon, Coffee } from 'lucide-react';
 
-const checkoutSchema = z.object({
-  fullName: z.string().min(2, 'Name is required'),
-  phone: z.string().min(10, 'Valid phone number is required'),
-  locationType: z.enum(['BIT_MINI_CAFE_BOYS', 'BIT_MINI_CAFE_GIRLS', 'BIT_QUARTERS', 'CUSTOM']),
-  mealType: z.enum(['Lunch', 'Dinner']).optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  pincode: z.string().optional(),
-  landmark: z.string().optional(),
-  paymentMethod: z.enum(['UPI', 'Card', 'COD'])
-}).superRefine((data, ctx) => {
-  if (data.locationType === 'CUSTOM') {
-    if (!data.address || data.address.length < 5) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Full address is required', path: ['address'] });
-    if (!data.city || data.city.length < 2) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'City is required', path: ['city'] });
-    if (!data.state || data.state.length < 2) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'State is required', path: ['state'] });
-    if (!data.pincode || data.pincode.length < 6) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Valid pincode is required', path: ['pincode'] });
-  }
+const isCutoffPassed = (cutoff?: string) => {
+  if (!cutoff) return false;
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const [cutoffHours, cutoffMinutes] = cutoff.split(':').map(Number);
+  return hours > cutoffHours || (hours === cutoffHours && minutes >= cutoffMinutes);
+};
 
-  if (data.locationType === 'BIT_MINI_CAFE_BOYS' || data.locationType === 'BIT_MINI_CAFE_GIRLS') {
-    if (!data.mealType) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Please select Lunch or Dinner', path: ['mealType'] });
-    } else {
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      const formattedHours = hours % 12 || 12;
-      const formattedMins = minutes < 10 ? `0${minutes}` : minutes;
-      const currentTimeStr = `${formattedHours}:${formattedMins} ${ampm}`;
+const formatCutoff = (cutoff?: string) => {
+  if (!cutoff) return 'N/A';
+  const [h, m] = cutoff.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const fmtH = h % 12 || 12;
+  const fmtM = m < 10 ? `0${m}` : m;
+  return `${fmtH}:${fmtM} ${ampm}`;
+};
 
-      if (data.mealType === 'Lunch') {
-        if (hours >= 11) {
-          ctx.addIssue({ 
-            code: z.ZodIssueCode.custom, 
-            message: `Current time is ${currentTimeStr}. Lunch orders must be placed before 11:00 AM.`, 
-            path: ['mealType'] 
-          });
-        }
-      } else if (data.mealType === 'Dinner') {
-        if (hours > 17 || (hours === 17 && minutes >= 30)) {
-          ctx.addIssue({ 
-            code: z.ZodIssueCode.custom, 
-            message: `Current time is ${currentTimeStr}. Dinner orders must be placed before 5:30 PM.`, 
-            path: ['mealType'] 
-          });
-        }
-      }
-    }
-  }
-});
-
-type CheckoutFormValues = z.infer<typeof checkoutSchema>;
+type CheckoutFormValues = {
+  fullName: string;
+  phone: string;
+  locationType: string;
+  mealType?: 'Breakfast' | 'Lunch' | 'Dinner';
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  landmark?: string;
+  paymentMethod: 'UPI' | 'Card' | 'COD';
+};
 
 const Checkout: React.FC = () => {
-  const { cart, placeOrder } = useStore();
+  const { cart, placeOrder, locations } = useStore();
   const navigate = useNavigate();
+
+  const checkoutSchema = React.useMemo(() => {
+    return z.object({
+      fullName: z.string().min(2, 'Name is required'),
+      phone: z.string().min(10, 'Valid phone number is required'),
+      locationType: z.string().min(1, 'Location is required'),
+      mealType: z.enum(['Breakfast', 'Lunch', 'Dinner']).optional(),
+      address: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      pincode: z.string().optional(),
+      landmark: z.string().optional(),
+      paymentMethod: z.enum(['UPI', 'Card', 'COD'])
+    }).superRefine((data, ctx) => {
+      const selectedLoc = locations.find(l => l.id === data.locationType);
+      
+      if (selectedLoc?.type === 'CUSTOM') {
+        if (!data.address || data.address.length < 5) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Full address is required', path: ['address'] });
+        if (!data.city || data.city.length < 2) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'City is required', path: ['city'] });
+        if (!data.state || data.state.length < 2) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'State is required', path: ['state'] });
+        if (!data.pincode || data.pincode.length < 6) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Valid pincode is required', path: ['pincode'] });
+      }
+    
+      if (selectedLoc?.requiresMealType) {
+        if (!data.mealType) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Please select a Meal Type', path: ['mealType'] });
+        } else {
+          let cutoff = '';
+          let mealName = '';
+          
+          if (data.mealType === 'Breakfast') {
+            if (!selectedLoc.offersBreakfast) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Breakfast is not offered here.', path: ['mealType'] });
+              return;
+            }
+            cutoff = selectedLoc.breakfastCutoff || '';
+            mealName = 'Breakfast';
+          } else if (data.mealType === 'Lunch') {
+            if (!selectedLoc.offersLunch) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Lunch is not offered here.', path: ['mealType'] });
+              return;
+            }
+            cutoff = selectedLoc.lunchCutoff || '';
+            mealName = 'Lunch';
+          } else if (data.mealType === 'Dinner') {
+            if (!selectedLoc.offersDinner) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Dinner is not offered here.', path: ['mealType'] });
+              return;
+            }
+            cutoff = selectedLoc.dinnerCutoff || '';
+            mealName = 'Dinner';
+          }
+
+          if (cutoff && isCutoffPassed(cutoff)) {
+            const now = new Date();
+            const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+            const fmtH = now.getHours() % 12 || 12;
+            const fmtM = now.getMinutes() < 10 ? `0${now.getMinutes()}` : now.getMinutes();
+            const currentTimeStr = `${fmtH}:${fmtM} ${ampm}`;
+
+            ctx.addIssue({ 
+              code: z.ZodIssueCode.custom, 
+              message: `Current time is ${currentTimeStr}. ${mealName} orders must be placed before ${formatCutoff(cutoff)}.`, 
+              path: ['mealType'] 
+            });
+          }
+        }
+      }
+    });
+  }, [locations]);
 
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      locationType: 'BIT_MINI_CAFE_BOYS',
+      locationType: locations.find(l => l.active)?.id || '',
       paymentMethod: 'UPI'
     }
   });
@@ -77,12 +123,21 @@ const Checkout: React.FC = () => {
   const locationType = watch('locationType');
   const mealType = watch('mealType');
 
-  // Clear meal type if location changes away from mini cafe
+  const selectedLocation = locations.find(l => l.id === locationType);
+
+  const isBreakfastDisabled = isCutoffPassed(selectedLocation?.breakfastCutoff);
+  const isLunchDisabled = isCutoffPassed(selectedLocation?.lunchCutoff);
+  const isDinnerDisabled = isCutoffPassed(selectedLocation?.dinnerCutoff);
+
+  const offeredMealsCount = [selectedLocation?.offersBreakfast, selectedLocation?.offersLunch, selectedLocation?.offersDinner].filter(Boolean).length;
+  const gridColsClass = offeredMealsCount === 1 ? 'sm:grid-cols-1' : offeredMealsCount === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3';
+
+  // Clear meal type if location changes away from cafe
   React.useEffect(() => {
-    if (locationType !== 'BIT_MINI_CAFE_BOYS' && locationType !== 'BIT_MINI_CAFE_GIRLS') {
+    if (selectedLocation && !selectedLocation.requiresMealType) {
       setValue('mealType', undefined);
     }
-  }, [locationType, setValue]);
+  }, [selectedLocation, setValue]);
 
   if (cart.length === 0) {
     React.useEffect(() => { navigate('/cart'); }, [navigate]);
@@ -95,11 +150,17 @@ const Checkout: React.FC = () => {
   const total = subtotal + delivery + tax;
 
   const onSubmit = (data: CheckoutFormValues) => {
+    const loc = locations.find(l => l.id === data.locationType);
     let finalAddress = '';
-    if (data.locationType === 'BIT_MINI_CAFE_BOYS') finalAddress = `BIT MINI CAFE - BOYS (${data.mealType})`;
-    else if (data.locationType === 'BIT_MINI_CAFE_GIRLS') finalAddress = `BIT MINI CAFE - GIRLS (${data.mealType})`;
-    else if (data.locationType === 'BIT_QUARTERS') finalAddress = 'BIT QUARTERS';
-    else finalAddress = `${data.address}, ${data.city}, ${data.state} - ${data.pincode}`;
+    
+    if (loc?.type === 'CUSTOM') {
+      finalAddress = `${data.address}, ${data.city}, ${data.state} - ${data.pincode}`;
+    } else {
+      finalAddress = loc?.name || '';
+      if (loc?.requiresMealType) {
+        finalAddress += ` (${data.mealType})`;
+      }
+    }
 
     const orderData = {
       customerName: data.fullName,
@@ -142,60 +203,62 @@ const Checkout: React.FC = () => {
               <h2 className="text-xl font-bold text-gray-900 mb-6 pb-4 border-b">Delivery Location</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${locationType === 'BIT_MINI_CAFE_BOYS' ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-gray-200 hover:bg-gray-50'}`}>
-                  <input type="radio" value="BIT_MINI_CAFE_BOYS" {...register('locationType')} className="hidden" />
-                  <Building className={`w-6 h-6 ${locationType === 'BIT_MINI_CAFE_BOYS' ? 'text-primary-600' : 'text-gray-400'}`} />
-                  <span className={`ml-3 font-medium ${locationType === 'BIT_MINI_CAFE_BOYS' ? 'text-primary-700' : 'text-gray-700'}`}>BIT MINI CAFE - BOYS</span>
-                </label>
-                
-                <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${locationType === 'BIT_MINI_CAFE_GIRLS' ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-gray-200 hover:bg-gray-50'}`}>
-                  <input type="radio" value="BIT_MINI_CAFE_GIRLS" {...register('locationType')} className="hidden" />
-                  <Building className={`w-6 h-6 ${locationType === 'BIT_MINI_CAFE_GIRLS' ? 'text-primary-600' : 'text-gray-400'}`} />
-                  <span className={`ml-3 font-medium ${locationType === 'BIT_MINI_CAFE_GIRLS' ? 'text-primary-700' : 'text-gray-700'}`}>BIT MINI CAFE - GIRLS</span>
-                </label>
-
-                <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${locationType === 'BIT_QUARTERS' ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-gray-200 hover:bg-gray-50'}`}>
-                  <input type="radio" value="BIT_QUARTERS" {...register('locationType')} className="hidden" />
-                  <Home className={`w-6 h-6 ${locationType === 'BIT_QUARTERS' ? 'text-primary-600' : 'text-gray-400'}`} />
-                  <span className={`ml-3 font-medium ${locationType === 'BIT_QUARTERS' ? 'text-primary-700' : 'text-gray-700'}`}>BIT QUARTERS</span>
-                </label>
-
-                <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${locationType === 'CUSTOM' ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-gray-200 hover:bg-gray-50'}`}>
-                  <input type="radio" value="CUSTOM" {...register('locationType')} className="hidden" />
-                  <MapPin className={`w-6 h-6 ${locationType === 'CUSTOM' ? 'text-primary-600' : 'text-gray-400'}`} />
-                  <span className={`ml-3 font-medium ${locationType === 'CUSTOM' ? 'text-primary-700' : 'text-gray-700'}`}>Add Custom Address</span>
-                </label>
+                {locations.filter(l => l.active).map(loc => {
+                  let Icon = Building;
+                  if (loc.type === 'QUARTERS') Icon = Home;
+                  if (loc.type === 'CUSTOM') Icon = MapPin;
+                  
+                  return (
+                    <label key={loc.id} className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${locationType === loc.id ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-gray-200 hover:bg-gray-50'}`}>
+                      <input type="radio" value={loc.id} {...register('locationType')} className="hidden" />
+                      <Icon className={`w-6 h-6 ${locationType === loc.id ? 'text-primary-600' : 'text-gray-400'}`} />
+                      <span className={`ml-3 font-medium ${locationType === loc.id ? 'text-primary-700' : 'text-gray-700'}`}>{loc.name}</span>
+                    </label>
+                  );
+                })}
               </div>
 
-              {(locationType === 'BIT_MINI_CAFE_BOYS' || locationType === 'BIT_MINI_CAFE_GIRLS') && (
+              {selectedLocation?.requiresMealType && (
                 <div className="bg-orange-50 p-6 rounded-xl border border-orange-100 mb-6">
                   <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center">
                     Select Meal Type
                     <span className="ml-2 text-xs font-normal text-gray-500">(Required for Cafe Orders)</span>
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <label className={`flex flex-col items-center justify-center p-4 border rounded-xl cursor-pointer transition text-center ${mealType === 'Lunch' ? 'border-primary-500 bg-white ring-1 ring-primary-500 shadow-sm' : 'border-gray-200 bg-white hover:bg-gray-50'}`}>
-                      <input type="radio" value="Lunch" {...register('mealType')} className="hidden" />
-                      <Sun className={`w-8 h-8 mb-2 ${mealType === 'Lunch' ? 'text-primary-600' : 'text-gray-400'}`} />
-                      <span className={`font-medium ${mealType === 'Lunch' ? 'text-primary-700' : 'text-gray-700'}`}>Lunch</span>
-                      <span className="text-xs text-gray-500 mt-1">Order before 11:00 AM</span>
-                    </label>
-                    <label className={`flex flex-col items-center justify-center p-4 border rounded-xl cursor-pointer transition text-center ${mealType === 'Dinner' ? 'border-primary-500 bg-white ring-1 ring-primary-500 shadow-sm' : 'border-gray-200 bg-white hover:bg-gray-50'}`}>
-                      <input type="radio" value="Dinner" {...register('mealType')} className="hidden" />
-                      <Moon className={`w-8 h-8 mb-2 ${mealType === 'Dinner' ? 'text-primary-600' : 'text-gray-400'}`} />
-                      <span className={`font-medium ${mealType === 'Dinner' ? 'text-primary-700' : 'text-gray-700'}`}>Dinner</span>
-                      <span className="text-xs text-gray-500 mt-1">Order before 5:30 PM</span>
-                    </label>
+                  <div className={`grid grid-cols-1 ${gridColsClass} gap-4`}>
+                    {selectedLocation?.offersBreakfast && (
+                      <label className={`flex flex-col items-center justify-center p-4 border rounded-xl transition text-center ${isBreakfastDisabled ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200' : 'cursor-pointer ' + (mealType === 'Breakfast' ? 'border-primary-500 bg-white ring-1 ring-primary-500 shadow-sm' : 'border-gray-200 bg-white hover:bg-gray-50')}`}>
+                        <input type="radio" value="Breakfast" {...register('mealType')} disabled={isBreakfastDisabled} className="hidden" />
+                        <Coffee className={`w-8 h-8 mb-2 ${mealType === 'Breakfast' ? 'text-primary-600' : 'text-gray-400'}`} />
+                        <span className={`font-medium ${mealType === 'Breakfast' ? 'text-primary-700' : 'text-gray-700'}`}>Breakfast</span>
+                        <span className="text-xs text-gray-500 mt-1">Order before {formatCutoff(selectedLocation?.breakfastCutoff)}</span>
+                      </label>
+                    )}
+                    {selectedLocation?.offersLunch && (
+                      <label className={`flex flex-col items-center justify-center p-4 border rounded-xl transition text-center ${isLunchDisabled ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200' : 'cursor-pointer ' + (mealType === 'Lunch' ? 'border-primary-500 bg-white ring-1 ring-primary-500 shadow-sm' : 'border-gray-200 bg-white hover:bg-gray-50')}`}>
+                        <input type="radio" value="Lunch" {...register('mealType')} disabled={isLunchDisabled} className="hidden" />
+                        <Sun className={`w-8 h-8 mb-2 ${mealType === 'Lunch' ? 'text-primary-600' : 'text-gray-400'}`} />
+                        <span className={`font-medium ${mealType === 'Lunch' ? 'text-primary-700' : 'text-gray-700'}`}>Lunch</span>
+                        <span className="text-xs text-gray-500 mt-1">Order before {formatCutoff(selectedLocation?.lunchCutoff)}</span>
+                      </label>
+                    )}
+                    {selectedLocation?.offersDinner && (
+                      <label className={`flex flex-col items-center justify-center p-4 border rounded-xl transition text-center ${isDinnerDisabled ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200' : 'cursor-pointer ' + (mealType === 'Dinner' ? 'border-primary-500 bg-white ring-1 ring-primary-500 shadow-sm' : 'border-gray-200 bg-white hover:bg-gray-50')}`}>
+                        <input type="radio" value="Dinner" {...register('mealType')} disabled={isDinnerDisabled} className="hidden" />
+                        <Moon className={`w-8 h-8 mb-2 ${mealType === 'Dinner' ? 'text-primary-600' : 'text-gray-400'}`} />
+                        <span className={`font-medium ${mealType === 'Dinner' ? 'text-primary-700' : 'text-gray-700'}`}>Dinner</span>
+                        <span className="text-xs text-gray-500 mt-1">Order before {formatCutoff(selectedLocation?.dinnerCutoff)}</span>
+                      </label>
+                    )}
                   </div>
                   {errors.mealType && (
-                    <div className="mt-3 p-3 bg-red-50 text-red-700 text-sm rounded-lg font-medium">
+                    <div className="mt-3 p-3 bg-red-50 text-red-700 text-sm rounded-lg font-bold shadow-sm border border-red-200">
                       {errors.mealType.message}
                     </div>
                   )}
                 </div>
               )}
 
-              {locationType === 'CUSTOM' && (
+              {selectedLocation?.type === 'CUSTOM' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
                   <div className="col-span-1 md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Full Address</label>

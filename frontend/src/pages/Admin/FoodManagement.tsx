@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore } from '../../store/StoreContext';
 import { Link } from 'react-router-dom';
+import { Edit2, Trash2 } from 'lucide-react';
 
 const FoodManagement: React.FC = () => {
   const { foods, deleteFood, toggleFoodAvailability } = useStore();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteFood(deleteId);
+      setDeleteId(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -29,19 +42,50 @@ const FoodManagement: React.FC = () => {
                 <td className="p-4">{food.category}</td>
                 <td className="p-4">₹{food.price}</td>
                 <td className="p-4">
-                  <button onClick={() => toggleFoodAvailability(food.id)} className={`px-3 py-1 rounded-full text-sm ${food.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {food.available ? 'Available' : 'Unavailable'}
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleFoodAvailability(food.id)}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 ${food.available ? 'bg-green-500' : 'bg-gray-300'}`}
+                    >
+                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${food.available ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                    <span className={`text-sm font-medium ${food.available ? 'text-green-600' : 'text-gray-500'}`}>
+                      {food.available ? 'Available' : 'Unavailable'}
+                    </span>
+                  </div>
                 </td>
-                <td className="p-4 space-x-2">
-                  <Link to={`/admin/foods/edit/${food.id}`} className="text-blue-600 hover:underline">Edit</Link>
-                  <button onClick={() => deleteFood(food.id)} className="text-red-600 hover:underline">Delete</button>
+                <td className="p-4">
+                  <div className="flex space-x-3">
+                    <Link to={`/admin/foods/edit/${food.id}`} className="text-blue-600 hover:text-blue-800 transition" title="Edit">
+                      <Edit2 className="w-5 h-5" />
+                    </Link>
+                    <button onClick={() => handleDelete(food.id)} className="text-red-600 hover:text-red-800 transition" title="Delete">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl transform transition-all animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center">
+              <Trash2 className="w-6 h-6 text-red-500 mr-2" />
+              Delete Food Item
+            </h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this food item? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition">Cancel</button>
+              <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 font-bold transition shadow-sm">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

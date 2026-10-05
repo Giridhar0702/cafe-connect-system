@@ -118,13 +118,7 @@ const EditFood: React.FC = () => {
           </div>
 
           <div className="flex justify-end space-x-4 pt-4 border-t border-gray-100">
-            <button 
-              type="button" 
-              onClick={() => navigate('/admin/foods')}
-              className="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition"
-            >
-              Cancel
-            </button>
+
             <button 
               type="submit"
               className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-500/30"

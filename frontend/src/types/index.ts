@@ -57,3 +57,17 @@ export interface Offer {
   minOrder: number;
   active: boolean;
 }
+
+export interface DeliveryLocation {
+  id: string;
+  name: string;
+  type: 'CAFE' | 'QUARTERS' | 'CUSTOM';
+  requiresMealType: boolean;
+  offersBreakfast?: boolean;
+  offersLunch?: boolean;
+  offersDinner?: boolean;
+  active: boolean;
+  breakfastCutoff?: string; // HH:mm format, e.g. "08:30"
+  lunchCutoff?: string;     // HH:mm format, e.g. "11:00"
+  dinnerCutoff?: string;    // HH:mm format, e.g. "17:30"
+}

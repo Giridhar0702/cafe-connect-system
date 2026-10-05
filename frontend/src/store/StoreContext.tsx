@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { FoodItem, FoodCategory, Order, CartItem, Review, Offer } from '../types';
-import { initialFoods, initialCategories, initialOrders, initialReviews, initialOffers } from '../mocks/mockData';
+import type { FoodItem, FoodCategory, Order, CartItem, Review, Offer, DeliveryLocation } from '../types';
+import { initialFoods, initialCategories, initialOrders, initialReviews, initialOffers, initialLocations } from '../mocks/mockData';
 
 interface StoreContextType {
   foods: FoodItem[];
@@ -9,6 +9,7 @@ interface StoreContextType {
   reviews: Review[];
   offers: Offer[];
   cart: CartItem[];
+  locations: DeliveryLocation[];
   
   // Actions
   addFood: (food: FoodItem) => void;
@@ -30,6 +31,11 @@ interface StoreContextType {
   addOffer: (offer: Omit<Offer, 'id'>) => void;
   toggleOfferActive: (id: string) => void;
   deleteOffer: (id: string) => void;
+
+  addLocation: (location: Omit<DeliveryLocation, 'id'>) => void;
+  updateLocation: (location: DeliveryLocation) => void;
+  toggleLocationActive: (id: string) => void;
+  deleteLocation: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -70,6 +76,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const saved = localStorage.getItem('cart');
     return saved ? JSON.parse(saved) : [];
   });
+  
+  const [locations, setLocations] = useState<DeliveryLocation[]>(() => {
+    const saved = localStorage.getItem('locations');
+    return saved ? JSON.parse(saved) : initialLocations;
+  });
 
   // Save to localStorage on change
   useEffect(() => { localStorage.setItem('foods', JSON.stringify(foods)); }, [foods]);
@@ -78,6 +89,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => { localStorage.setItem('reviews', JSON.stringify(reviews)); }, [reviews]);
   useEffect(() => { localStorage.setItem('offers', JSON.stringify(offers)); }, [offers]);
   useEffect(() => { localStorage.setItem('cart', JSON.stringify(cart)); }, [cart]);
+  useEffect(() => { localStorage.setItem('locations', JSON.stringify(locations)); }, [locations]);
 
   const addFood = (food: FoodItem) => setFoods([...foods, food]);
   const updateFood = (updatedFood: FoodItem) => setFoods(foods.map(f => f.id === updatedFood.id ? updatedFood : f));
@@ -144,6 +156,26 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setOffers(offers.filter(o => o.id !== id));
   };
 
+  const addLocation = (locData: Omit<DeliveryLocation, 'id'>) => {
+    const newLoc: DeliveryLocation = {
+      ...locData,
+      id: `LOC-${Math.random().toString(36).substr(2, 9)}`
+    };
+    setLocations([...locations, newLoc]);
+  };
+
+  const updateLocation = (updatedLoc: DeliveryLocation) => {
+    setLocations(locations.map(l => l.id === updatedLoc.id ? updatedLoc : l));
+  };
+
+  const toggleLocationActive = (id: string) => {
+    setLocations(locations.map(l => l.id === id ? { ...l, active: !l.active } : l));
+  };
+
+  const deleteLocation = (id: string) => {
+    setLocations(locations.filter(l => l.id !== id));
+  };
+
   return (
     <StoreContext.Provider value={{
       foods, categories, orders, reviews, offers, cart,
@@ -151,7 +183,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addCategory, deleteCategory,
       addToCart, removeFromCart, updateCartQuantity, clearCart,
       placeOrder, updateOrderStatus,
-      addOffer, toggleOfferActive, deleteOffer
+      addOffer, toggleOfferActive, deleteOffer,
+      locations, addLocation, updateLocation, toggleLocationActive, deleteLocation
     }}>
       {children}
     </StoreContext.Provider>

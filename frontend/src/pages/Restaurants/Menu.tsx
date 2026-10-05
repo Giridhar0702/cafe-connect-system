@@ -1,24 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../../store/StoreContext';
-import { Star, Search, Plus, Minus } from 'lucide-react';
+import { Search, Plus, Minus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+
+const VegIcon = () => (
+  <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-green-600 rounded-[3px] bg-white mt-1 shrink-0">
+    <div className="w-[8px] h-[8px] bg-green-600 rounded-full"></div>
+  </div>
+);
+
+const NonVegIcon = () => (
+  <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-red-600 rounded-[3px] bg-white mt-1 shrink-0">
+    <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[6px] border-b-red-600"></div>
+  </div>
+);
+
+const isNonVeg = (name: string, description: string) => {
+  return /non veg|mutton|chicken|fish|prawn|egg|beef|nattukozhi|kochai|meat/i.test(name + ' ' + description);
+};
 
 const Menu: React.FC = () => {
   const { foods, categories, cart, addToCart, updateCartQuantity } = useStore();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const initialCategory = queryParams.get('category') || 'All';
+  const initialCategory = queryParams.get('category');
+  const initialSearch = queryParams.get('search');
 
-  const [activeCategory, setActiveCategory] = useState<string>(initialCategory);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>(initialCategory || categories[0]);
+  const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const navigate = useNavigate();
 
-  const filteredFoods = foods.filter(food => {
-    const matchesCategory = activeCategory === 'All' || food.category === activeCategory;
-    const matchesSearch = food.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          food.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const categoryCounts = categories.map(cat => ({
+    name: cat,
+    count: foods.filter(f => f.category === cat).length
+  })).filter(c => c.count > 0);
+
+  useEffect(() => {
+    const handleScroll = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveCategory(entry.target.id);
+        }
+      });
+    };
+
+    observer.current = new IntersectionObserver(handleScroll, {
+      root: null,
+      rootMargin: '-20% 0px -70% 0px', // Trigger when header hits top 20%
+      threshold: 0,
+    });
+
+    Object.values(categoryRefs.current).forEach(ref => {
+      if (ref) observer.current?.observe(ref);
+    });
+
+    return () => observer.current?.disconnect();
+  }, [categoryCounts]);
+
+  // Scroll to category on sidebar click
+  const scrollToCategory = (categoryName: string) => {
+    setActiveCategory(categoryName);
+    const element = categoryRefs.current[categoryName];
+    if (element) {
+      const offset = window.innerWidth < 768 ? 120 : 170;
+      const y = element.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
+  // On mount, if URL has category, scroll to it
+  useEffect(() => {
+    if (initialCategory) {
+      setTimeout(() => scrollToCategory(initialCategory), 100);
+    }
+  }, [initialCategory]);
 
   const getCartQuantity = (foodId: string) => {
     return cart.find(item => item.id === foodId)?.quantity || 0;
@@ -43,119 +101,173 @@ const Menu: React.FC = () => {
     }
   };
 
+  const filteredFoods = foods.filter(food => {
+    return food.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+           food.description.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  // Group filtered foods
+  const groupedFoods = categoryCounts.map(cat => ({
+    ...cat,
+    items: filteredFoods.filter(f => f.category === cat.name)
+  })).filter(cat => cat.items.length > 0);
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">Our Menu</h1>
-        
-        {/* Search */}
-        <div className="max-w-2xl mx-auto mb-8 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+    <div className="min-h-screen bg-white">
+      {/* Search Header */}
+      <div className="hidden md:block sticky top-[64px] z-30 bg-white border-b border-gray-100 shadow-sm px-4 py-4 md:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900 hidden md:block">Menu</h1>
+          <div className="relative w-full md:w-96">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition"
+              placeholder="Search dishes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-3 py-4 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm shadow-sm transition"
-            placeholder="Search food..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
         </div>
+      </div>
 
-        {/* Categories */}
-        <div className="flex overflow-x-auto pb-4 mb-8 hide-scrollbar space-x-4 justify-start md:justify-center">
-          <button
-            onClick={() => setActiveCategory('All')}
-            className={`whitespace-nowrap px-6 py-2 rounded-full font-medium transition ${
-              activeCategory === 'All' ? 'bg-primary-600 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            All
-          </button>
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`whitespace-nowrap px-6 py-2 rounded-full font-medium transition ${
-                activeCategory === cat ? 'bg-primary-600 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+      {/* Mobile Horizontal Categories (Visible only on small screens) */}
+      <div className="md:hidden w-full overflow-x-auto hide-scrollbar sticky top-[64px] bg-white z-20 border-b border-gray-100 px-4 py-3 flex space-x-3 shadow-sm">
+        {groupedFoods.map(cat => (
+           <button
+           key={cat.name}
+           onClick={() => scrollToCategory(cat.name)}
+           className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition ${
+             activeCategory === cat.name ? 'bg-primary-50 text-primary-600 border border-primary-200' : 'bg-gray-50 text-gray-600 border border-transparent'
+           }`}
+         >
+           {cat.name}
+         </button>
+        ))}
+      </div>
 
-        {/* Food Grid */}
-        {filteredFoods.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredFoods.map(food => {
-              const qty = getCartQuantity(food.id);
+      <div className="max-w-7xl mx-auto flex items-start">
+        {/* Sidebar */}
+        <div className="hidden md:block w-64 shrink-0 sticky top-[144px] h-[calc(100vh-144px)] overflow-y-auto border-r border-gray-100 py-6 custom-scrollbar">
+          <ul className="space-y-1">
+            {groupedFoods.map(cat => {
+              const isActive = activeCategory === cat.name;
               return (
-                <div 
-                  key={food.id} 
-                  onClick={() => navigate(`/food/${food.id}`)}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col cursor-pointer border border-gray-100"
-                >
-                  <div className="relative h-56 overflow-hidden">
-                    <img src={food.imageUrl} alt={food.name} className="w-full h-full object-cover hover:scale-105 transition duration-300" />
-                    {!food.available && (
-                      <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
-                        <span className="text-gray-900 font-bold px-4 py-2 bg-white rounded-full text-sm shadow-lg">Currently Unavailable</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-5 flex flex-col flex-grow">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-xl font-bold text-gray-900">{food.name}</h3>
-                      <span className="font-bold text-primary-600 text-lg">₹{food.price}</span>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-4 line-clamp-2 flex-grow">{food.description}</p>
-                    
-                    <div className="flex items-center justify-between mt-auto">
-                      <div className="flex items-center text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-md">
-                        <Star className="w-4 h-4 text-yellow-500 mr-1 fill-current" />
-                        {food.rating}
-                      </div>
-
-                      <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
-                        {!food.available ? (
-                          <button disabled className="px-4 py-2 bg-gray-200 text-gray-400 rounded-lg cursor-not-allowed font-medium">
-                            Unavailable
-                          </button>
-                        ) : qty > 0 ? (
-                          <div className="flex items-center bg-primary-50 rounded-lg border border-primary-200">
-                            <button onClick={(e) => handleDecrement(e, food.id)} className="p-2 text-primary-600 hover:bg-primary-100 rounded-l-lg transition">
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="w-8 text-center font-semibold text-primary-700">{qty}</span>
-                            <button onClick={(e) => handleIncrement(e, food)} className="p-2 text-primary-600 hover:bg-primary-100 rounded-r-lg transition">
-                              <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <button 
-                            onClick={(e) => handleIncrement(e, food)}
-                            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-medium shadow-sm hover:shadow-md"
-                          >
-                            Add to Cart
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <li key={cat.name}>
+                  <button
+                    onClick={() => scrollToCategory(cat.name)}
+                    className={`w-full text-left px-6 py-3 text-[15px] transition-all flex items-center justify-between ${
+                      isActive 
+                        ? 'bg-gradient-to-r from-transparent via-primary-50/50 to-primary-100/50 border-r-2 border-primary-500 text-primary-500 font-semibold' 
+                        : 'text-gray-600 hover:bg-gray-50 font-medium'
+                    }`}
+                  >
+                    <span>{cat.name} ({cat.count})</span>
+                  </button>
+                </li>
               );
             })}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <h3 className="text-2xl font-bold text-gray-700 mb-2">No food items found</h3>
-            <p className="text-gray-500">Try adjusting your search or category filters.</p>
-          </div>
-        )}
+          </ul>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 px-4 py-6 md:px-8 md:py-8 min-h-screen">
+          {groupedFoods.length === 0 ? (
+            <div className="text-center py-20">
+              <h3 className="text-xl font-bold text-gray-700 mb-2">No food items found</h3>
+              <p className="text-gray-500">Try adjusting your search query.</p>
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {groupedFoods.map(cat => (
+                <div 
+                  key={cat.name} 
+                  id={cat.name} 
+                  ref={el => { categoryRefs.current[cat.name] = el; }}
+                  className="scroll-mt-[120px] md:scroll-mt-[170px]"
+                >
+                  <h2 className="text-[22px] font-bold text-gray-800 mb-6">{cat.name}</h2>
+                  <div className="space-y-6">
+                    {cat.items.map((food, idx) => {
+                      const qty = getCartQuantity(food.id);
+                      return (
+                        <div key={food.id}>
+                          <div className="flex justify-between items-start cursor-pointer group" onClick={() => navigate(`/food/${food.id}`)}>
+                            <div className="flex gap-3 flex-1">
+                              {isNonVeg(food.name, food.description) ? <NonVegIcon /> : <VegIcon />}
+                              <div>
+                                <h3 className="text-lg font-medium text-gray-800 group-hover:text-primary-600 transition-colors">{food.name}</h3>
+                                <div className="text-[15px] font-medium text-gray-700 mt-1">₹{food.price}</div>
+                              </div>
+                            </div>
+                            
+                            <div className="ml-4 shrink-0 flex items-center justify-end w-[100px]" onClick={e => e.stopPropagation()}>
+                              {!food.available ? (
+                                <span className="text-sm font-medium text-red-500 bg-red-50 px-3 py-1 rounded-md">Sold Out</span>
+                              ) : qty > 0 ? (
+                                <div className="flex items-center justify-between w-[90px] h-[36px] bg-primary-50 border border-primary-200 rounded-lg overflow-hidden shadow-sm">
+                                  <button onClick={(e) => handleDecrement(e, food.id)} className="w-1/3 h-full flex items-center justify-center text-primary-600 hover:bg-primary-100 transition">
+                                    <Minus className="w-3.5 h-3.5" strokeWidth={3} />
+                                  </button>
+                                  <span className="w-1/3 text-center text-sm font-bold text-primary-600">{qty}</span>
+                                  <button onClick={(e) => handleIncrement(e, food)} className="w-1/3 h-full flex items-center justify-center text-primary-600 hover:bg-primary-100 transition">
+                                    <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button 
+                                  onClick={(e) => handleIncrement(e, food)}
+                                  className="w-[90px] h-[36px] flex items-center justify-center text-[14px] font-bold text-primary-500 bg-primary-50/50 border border-primary-200 rounded-lg hover:bg-primary-50 hover:shadow-sm transition-all shadow-sm"
+                                >
+                                  ADD <Plus className="w-3.5 h-3.5 ml-1" strokeWidth={3} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          {idx < cat.items.length - 1 && (
+                            <hr className="mt-6 border-t border-gray-100" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Category Separator */}
+                  <div className="h-4 border-b border-gray-100 mt-6 mb-10 w-full" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+      
+      {/* Global CSS for scrollbar hiding */}
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #f3f4f6;
+          border-radius: 4px;
+        }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+          background: #e5e7eb;
+        }
+      `}</style>
     </div>
   );
 };
 
 export default Menu;
+

@@ -9,8 +9,8 @@ const About: React.FC = () => {
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
           <div className="h-64 sm:h-96 w-full relative">
             <img 
-              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80" 
-              alt="Restaurant Interior" 
+              src="/shop-outdoor.jpg" 
+              alt="Ela Cafe Outdoor Area" 
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -27,6 +27,15 @@ const About: React.FC = () => {
               Our journey started with a simple belief: great food creates great memories. Our master chefs use only the freshest, locally sourced ingredients, carefully selected to create memorable culinary experiences for you and your family. 
               Whether you're craving a quick bite or planning a grand feast, we are here to serve you with joy and perfection.
             </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-10">
+              <div className="rounded-2xl overflow-hidden shadow-sm h-64">
+                <img src="/shop-outdoor.jpg" alt="Outdoor Seating" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+              </div>
+              <div className="rounded-2xl overflow-hidden shadow-sm h-64">
+                <img src="/shop-night.jpg" alt="Night View" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+              </div>
+            </div>
 
             <hr className="border-gray-200 my-12" />
 

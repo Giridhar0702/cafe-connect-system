@@ -43,18 +43,20 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [foods, setFoods] = useState<FoodItem[]>(() => {
     const saved = localStorage.getItem('foods');
-    const parsed = saved ? JSON.parse(saved) : initialFoods;
-    // Auto-heal broken Gulab Jamun image
-    return parsed.map((f: FoodItem) => 
-      f.id === 'f8' && f.imageUrl.includes('1599818832049')
-        ? { ...f, imageUrl: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80' }
-        : f
-    );
+    const parsed = saved ? JSON.parse(saved) : null;
+    if (parsed && parsed.length >= 30) {
+      return parsed;
+    }
+    return initialFoods;
   });
   
   const [categories, setCategories] = useState<FoodCategory[]>(() => {
     const saved = localStorage.getItem('categories');
-    return saved ? JSON.parse(saved) : initialCategories;
+    const parsed = saved ? JSON.parse(saved) : null;
+    if (parsed && parsed.length >= 10) {
+      return parsed;
+    }
+    return initialCategories;
   });
   
   const [orders, setOrders] = useState<Order[]>(() => {

@@ -16,7 +16,7 @@ const OffersManagement: React.FC = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-800">Offers Management</h1>
       
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex gap-4 items-end">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end">
         <div><label className="block text-sm">Code</label><input className="border p-2 rounded" value={newOffer.code} onChange={e => setNewOffer({...newOffer, code: e.target.value})} /></div>
         <div><label className="block text-sm">Type</label><select className="border p-2 rounded" value={newOffer.discountType} onChange={e => setNewOffer({...newOffer, discountType: e.target.value as any})}><option value="flat">Flat</option><option value="percentage">%</option></select></div>
         <div><label className="block text-sm">Value</label><input type="number" className="border p-2 rounded w-24" value={newOffer.discountValue} onChange={e => setNewOffer({...newOffer, discountValue: Number(e.target.value)})} /></div>
@@ -24,8 +24,8 @@ const OffersManagement: React.FC = () => {
         <button onClick={handleAdd} className="bg-primary-600 text-white px-4 py-2 rounded">Add</button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+        <table className="w-full text-left min-w-[600px]">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
               <th className="p-4 font-medium text-gray-600">Code</th>

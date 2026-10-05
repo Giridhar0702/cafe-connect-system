@@ -24,8 +24,8 @@ const FoodManagement: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-800">Food Management</h1>
         <Link to="/admin/foods/add" className="bg-primary-600 text-white px-4 py-2 rounded-xl">Add Food</Link>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+        <table className="w-full text-left min-w-[700px]">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
               <th className="p-4 font-medium text-gray-600">Name</th>

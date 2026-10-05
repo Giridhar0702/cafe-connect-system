@@ -139,8 +139,13 @@ const Checkout: React.FC = () => {
     }
   }, [selectedLocation, setValue]);
 
+  React.useEffect(() => { 
+    if (cart.length === 0) {
+      navigate('/cart'); 
+    }
+  }, [cart.length, navigate]);
+
   if (cart.length === 0) {
-    React.useEffect(() => { navigate('/cart'); }, [navigate]);
     return null;
   }
 

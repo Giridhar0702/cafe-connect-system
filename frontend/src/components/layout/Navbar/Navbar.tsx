@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu as MenuIcon, X, Home, Utensils, Tag, ShoppingBag, Info } from 'lucide-react';
+import { ShoppingCart, User, Search, Home, Utensils, Tag, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../../store/StoreContext';
 
 const Navbar: React.FC = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
   const { cart } = useStore();
 

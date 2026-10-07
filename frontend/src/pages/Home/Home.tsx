@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { Star, ChevronRight, Search, MapPin, Plus, Minus, Mail, Phone, Coffee, Soup } from 'lucide-react';
+import { Star, ChevronRight, Search, MapPin, Plus, Minus, Mail, Phone } from 'lucide-react';
 
 const VegIcon = () => (
   <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-green-600 rounded-[3px] bg-white shrink-0">

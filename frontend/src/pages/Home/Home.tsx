@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { Star, ChevronRight, Search, MapPin, Plus, Minus, Mail, Phone } from 'lucide-react';
+import { Star, ChevronRight, Search, MapPin, Plus, Minus, Mail, Phone, Coffee, Soup } from 'lucide-react';
 
 const VegIcon = () => (
   <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-green-600 rounded-[3px] bg-white shrink-0">
@@ -47,9 +47,9 @@ const Home: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Use only featured or top 8 foods for home page
-  const featuredFoods = foods.filter(f => f.featured).slice(0, 8);
-  const displayFoods = featuredFoods.length > 0 ? featuredFoods : foods.slice(0, 8);
+  // Use only top 4 foods for home page
+  const featuredFoods = foods.filter(f => f.featured).slice(0, 4);
+  const displayFoods = featuredFoods.length > 0 ? featuredFoods : foods.slice(0, 4);
 
   const getCartQuantity = (foodId: string) => cart.find(item => item.id === foodId)?.quantity || 0;
 
@@ -75,40 +75,51 @@ const Home: React.FC = () => {
   };
 
   const categoryImages: Record<string, string> = {
-    'Meals': 'https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=800&q=80',
-    'Briyanis': 'https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=800&q=80',
-    'NKV': 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=800&q=80',
-    'Hot Beverages': 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=800&q=80',
-    'Cold Beverages': 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800&q=80',
-    'Mojito': 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800&q=80',
-    'Soda': 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80',
-    'Ice Cakes': 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80',
-    'Desserts': 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80',
-    'NK Chattichoru': 'https://images.unsplash.com/photo-1626804475297-41609ea004eb?w=800&q=80',
-    'Cool Drinks Tin': 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=800&q=80'
+    'Meals': '/images/categories/meals_icon_1791393191076.jpg',
+    'Briyanis': '/images/categories/biryani_icon_1791393207259.jpg',
+    'NKV': '/images/categories/nkv_icon_1791393224083.jpg',
+    'Hot Beverages': '/images/categories/hot_beverage_icon_1791393238957.jpg',
+    'Cold Beverages': '/images/categories/cold_beverage_icon_1791393250962.jpg',
+    'Mojito': '/images/categories/mojito_icon_1791393262926.jpg',
+    'Soda': '/images/categories/soda_icon_1791393274215.jpg',
+    'Ice Cakes': '/images/categories/ice_cake_icon_1791393287698.jpg',
+    'Desserts': '/images/categories/dessert_icon_1791393314405.jpg',
+    'NK Chattichoru': '/images/categories/chattichoru_icon_1791393352108.jpg',
+    'Cool Drinks Tin': '/images/categories/tin_icon_1791393450743.jpg'
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Hero Section */}
-      <section className="relative h-[500px] flex items-center justify-center">
-        <div className="absolute inset-0 overflow-hidden">
-          <img
-            src="/shop-night.jpg"
-            alt="Ela Cafe Hero Background"
-            className="w-full h-full object-cover"
+    <div className="min-h-screen flex flex-col">
+      {/* Hero Section - Premium Zomato Style Background */}
+      <section className="relative sticky top-16 z-0 h-[400px] md:h-[500px] flex items-center justify-center overflow-hidden">
+        {/* Background Image Composition */}
+        <div className="absolute inset-0 z-0 bg-black">
+          {/* Main Background: Nattukozhi */}
+          <img 
+            src="/images/hero/nattukozhi_bg.png" 
+            alt="Nattukozhi Special" 
+            className="absolute inset-0 w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-black/50"></div>
+          {/* Left Side Overlay: Vegetables from previous image */}
+          <img 
+            src="https://images.unsplash.com/photo-1615719413546-198b25453f85?w=1600&q=80" 
+            alt="Vegetables" 
+            className="absolute inset-0 w-full h-full object-cover object-left"
+            style={{ maskImage: 'linear-gradient(to right, black 15%, transparent 35%)', WebkitMaskImage: 'linear-gradient(to right, black 15%, transparent 35%)' }}
+          />
+          {/* Brand Red & Dark Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/95 via-primary-800/80 to-gray-900/80"></div>
         </div>
-        <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center mt-12">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-8 italic drop-shadow-lg">
+
+        <div className="relative z-20 w-full max-w-4xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center mt-8">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-6 italic drop-shadow-lg">
             Elai Virundhu & Cafe
           </h1>
-          <p className="text-xl md:text-3xl text-gray-100 mb-8 font-medium drop-shadow-md">
+          <p className="text-xl md:text-2xl text-primary-100 mb-8 font-medium">
             Discover the best food & drinks in Sathyamangalam
           </p>
           
-          <form onSubmit={handleSearch} className="w-full max-w-3xl flex bg-white rounded-xl shadow-2xl overflow-hidden p-2 mb-8">
+          <form onSubmit={handleSearch} className="w-full max-w-3xl flex bg-white rounded-xl shadow-2xl overflow-hidden p-2 mb-8 pointer-events-auto">
             <div className="flex items-center px-4 border-r border-gray-200 w-1/3 hidden md:flex">
               <MapPin className="w-5 h-5 text-primary-500 mr-2 shrink-0" />
               <input type="text" placeholder="Sathyamangalam" disabled className="w-full bg-transparent text-gray-700 focus:outline-none placeholder-gray-400" />
@@ -130,45 +141,117 @@ const Home: React.FC = () => {
 
           <Link 
             to="/menu" 
-            className="px-10 py-4 bg-primary-600 text-white font-extrabold text-lg rounded-full hover:bg-primary-700 hover:scale-105 transition-all shadow-xl flex items-center"
+            className="px-10 py-4 bg-white text-primary-600 font-extrabold text-lg rounded-full hover:bg-gray-50 hover:scale-105 transition-all shadow-xl flex items-center pointer-events-auto"
           >
             ORDER NOW <ChevronRight className="ml-2 w-6 h-6" />
           </Link>
         </div>
       </section>
 
-      {/* Categories Section - Inspired by Zomato's round circles */}
-      <section className="py-16 bg-white border-b border-gray-100">
+      {/* Main Content Wrapper - Slides over hero */}
+      <div className="relative z-10 bg-white -mt-10 pt-10 rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+        
+        {/* Three Large Options - Swiggy Style */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <Link to="/menu?category=Meals" className="relative bg-white rounded-3xl p-6 shadow-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 min-h-[160px] md:min-h-[200px] flex flex-col justify-start border border-gray-100 group">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight z-10">HOME TASTE</h2>
+            <p className="text-gray-500 font-medium z-10 mt-1">TRADITIONAL MEALS</p>
+            <div className="mt-4 z-10">
+              <span className="inline-flex items-center justify-center w-10 h-10 bg-primary-600 text-white rounded-full group-hover:bg-primary-700 transition-colors">
+                <ChevronRight className="w-6 h-6" />
+              </span>
+            </div>
+            <img 
+              src="/images/categories/meals_icon_1791393191076.jpg" 
+              alt="Home Taste Meals" 
+              className="absolute bottom-2 right-2 w-32 h-32 md:w-44 md:h-44 object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+              style={{ maskImage: 'radial-gradient(circle, black 65%, transparent 100%)', WebkitMaskImage: 'radial-gradient(circle, black 65%, transparent 100%)' }}
+            />
+          </Link>
+          
+          <Link to="/menu?category=Hot Beverages" className="relative bg-white rounded-3xl p-6 shadow-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 min-h-[160px] md:min-h-[200px] flex flex-col justify-start border border-gray-100 group">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight z-10">CAFE ITEMS</h2>
+            <p className="text-gray-500 font-medium z-10 mt-1">DRINKS & SNACKS</p>
+            <div className="mt-4 z-10">
+              <span className="inline-flex items-center justify-center w-10 h-10 bg-primary-600 text-white rounded-full group-hover:bg-primary-700 transition-colors">
+                <ChevronRight className="w-6 h-6" />
+              </span>
+            </div>
+            <img 
+              src="/images/categories/ice_cake_icon_1791393287698.jpg" 
+              alt="Cafe Items" 
+              className="absolute bottom-2 right-2 w-32 h-32 md:w-44 md:h-44 object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+            />
+          </Link>
+
+          <Link to="/menu" className="relative bg-white rounded-3xl p-6 shadow-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 min-h-[160px] md:min-h-[200px] flex flex-col justify-start border border-gray-100 group">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight z-10">FREE DELIVERY</h2>
+             <p className="text-gray-500 font-medium z-10 mt-1">Around 5 KM</p>
+            <p className="text-gray-500 font-medium z-10 mt-1">AT YOUR DOORSTEP</p>
+            <div className="mt-4 z-10">
+              <span className="inline-flex items-center justify-center w-10 h-10 bg-primary-600 text-white rounded-full group-hover:bg-primary-700 transition-colors">
+                <ChevronRight className="w-6 h-6" />
+              </span>
+            </div>
+            {/* CSS Colorization Trick: Blue -> Red while keeping White background */}
+            <div className="absolute bottom-2 right-2 w-32 h-32 md:w-44 md:h-44 group-hover:scale-110 transition-transform duration-500 mix-blend-multiply pointer-events-none">
+              <img 
+                src="/images/delivery_logo.png" 
+                alt="Food Delivery" 
+                className="w-full h-full object-contain"
+                style={{ filter: 'grayscale(100%) contrast(1000%) brightness(150%)' }}
+              />
+              {/* Screen blending turns black pixels to red, leaves white pixels white */}
+              <div className="absolute inset-0 bg-primary-600 mix-blend-screen"></div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+        {/* Categories Section - Swiggy Style Isolated Images */}
+        <section className="py-12 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 tracking-tight">Eat what makes you happy</h2>
-            <Link to="/menu" className="text-primary-600 hover:text-primary-700 font-medium flex items-center">
-              See All Menu <ChevronRight className="w-4 h-4 ml-1" />
-            </Link>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Order our best food options</h2>
+            <div className="hidden md:flex space-x-2">
+              <button className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition" onClick={() => {
+                const scrollContainer = document.getElementById('category-scroll');
+                if (scrollContainer) scrollContainer.scrollBy({ left: -300, behavior: 'smooth' });
+              }}>
+                <ChevronRight className="w-5 h-5 rotate-180" />
+              </button>
+              <button className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition" onClick={() => {
+                const scrollContainer = document.getElementById('category-scroll');
+                if (scrollContainer) scrollContainer.scrollBy({ left: 300, behavior: 'smooth' });
+              }}>
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          <div className="flex overflow-x-auto hide-scrollbar gap-8 pb-4">
+          <div id="category-scroll" className="flex overflow-x-auto hide-scrollbar gap-4 md:gap-8 pb-6 pt-2 scroll-smooth">
             {categories.map(cat => (
               <div
                 key={cat}
                 onClick={() => navigate(`/menu?category=${cat}`)}
-                className="cursor-pointer group flex flex-col items-center flex-shrink-0 w-32"
+                className="cursor-pointer group flex flex-col items-center flex-shrink-0 w-24 md:w-36"
               >
-                <div className="w-32 h-32 rounded-full overflow-hidden mb-4 shadow-sm group-hover:shadow-xl transition-all duration-300 border border-gray-100 group-hover:border-primary-100">
+                <div className="w-24 h-24 md:w-36 md:h-36 mb-2 transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
                   <img 
-                    src={categoryImages[cat] || 'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80'} 
+                    src={categoryImages[cat]} 
                     alt={cat} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-contain mix-blend-multiply drop-shadow-sm"
                   />
                 </div>
-                <h3 className="font-semibold text-gray-700 text-center group-hover:text-primary-600 transition-colors">{cat}</h3>
+                <h3 className="font-semibold text-gray-700 text-center text-sm md:text-base group-hover:text-primary-600 transition-colors leading-tight line-clamp-2 px-1">{cat}</h3>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured / Popular Section */}
-      <section className="py-16 bg-gray-50/50">
+        {/* Featured / Popular Section */}
+        <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-10 tracking-tight">Popular right now</h2>
           
@@ -234,8 +317,8 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 pt-16 pb-8 mt-auto">
+        {/* Footer */}
+        <footer className="bg-gray-900 pt-16 pb-8 mt-auto rounded-b-[2.5rem] md:rounded-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-12">
             <div className="col-span-1 lg:col-span-2">
@@ -311,6 +394,7 @@ const Home: React.FC = () => {
           scrollbar-width: none;
         }
       `}</style>
+      </div>
     </div>
   );
 };

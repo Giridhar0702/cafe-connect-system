@@ -58,9 +58,11 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/menu" className="text-gray-500 hover:text-primary-600 transition">
-              <Search className="w-5 h-5" />
-            </Link>
+            {!isActive('/menu') && (
+              <Link to="/menu" className="text-gray-500 hover:text-primary-600 transition">
+                <Search className="w-5 h-5" />
+              </Link>
+            )}
             <Link to="/cart" className="relative text-gray-500 hover:text-primary-600 transition">
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
@@ -74,9 +76,14 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
 
-          {/* Mobile right icon (Cart only) */}
-          <div className="flex items-center md:hidden">
-            <Link to="/cart" className="relative text-gray-500 p-2">
+          {/* Mobile right icons */}
+          <div className="flex items-center space-x-1 md:hidden">
+            {!isActive('/menu') && (
+              <Link to="/menu" className="text-gray-500 p-2 hover:text-primary-600 transition">
+                <Search className="w-6 h-6" />
+              </Link>
+            )}
+            <Link to="/cart" className="relative text-gray-500 p-2 hover:text-primary-600 transition">
               <ShoppingCart className="w-6 h-6" />
               {cartCount > 0 && (
                 <span className="absolute top-0 right-0 bg-primary-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">

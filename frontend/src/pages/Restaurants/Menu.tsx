@@ -115,17 +115,17 @@ const Menu: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Search Header */}
-      <div className="hidden md:block sticky top-[64px] z-30 bg-white border-b border-gray-100 shadow-sm px-4 py-4 md:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="md:sticky md:top-[64px] z-30 bg-white border-b border-gray-100 px-4 py-4 md:px-8 md:shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h1 className="text-2xl font-bold text-gray-900 hidden md:block">Menu</h1>
           <div className="relative w-full md:w-96">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition"
-              placeholder="Search dishes..."
+              className="block w-full pl-11 pr-4 py-3 md:py-2 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base md:text-sm transition shadow-inner"
+              placeholder="Search for dishes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -134,13 +134,13 @@ const Menu: React.FC = () => {
       </div>
 
       {/* Mobile Horizontal Categories (Visible only on small screens) */}
-      <div className="md:hidden w-full overflow-x-auto hide-scrollbar sticky top-[64px] bg-white z-20 border-b border-gray-100 px-4 py-3 flex space-x-3 shadow-sm">
+      <div className="md:hidden w-full overflow-x-auto hide-scrollbar sticky top-[64px] bg-white z-20 border-b border-gray-100 px-4 py-3.5 flex space-x-3 shadow-[0_4px_10px_-4px_rgba(0,0,0,0.05)]">
         {groupedFoods.map(cat => (
            <button
            key={cat.name}
            onClick={() => scrollToCategory(cat.name)}
-           className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition ${
-             activeCategory === cat.name ? 'bg-primary-50 text-primary-600 border border-primary-200' : 'bg-gray-50 text-gray-600 border border-transparent'
+           className={`whitespace-nowrap px-5 py-2 rounded-xl text-[15px] font-bold transition shadow-sm ${
+             activeCategory === cat.name ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
            }`}
          >
            {cat.name}

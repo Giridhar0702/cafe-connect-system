@@ -2,9 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 antialiased font-sans;
+    @apply bg-gray-50 text-gray-900 antialiased font-sans pb-16 md:pb-0;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Nunito', sans-serif;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu as MenuIcon, X } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu as MenuIcon, X, Home, Utensils, Tag, ShoppingBag, Info } from 'lucide-react';
 import { useStore } from '../../../store/StoreContext';
 
 const Navbar: React.FC = () => {
@@ -12,11 +12,11 @@ const Navbar: React.FC = () => {
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Menu', path: '/menu' },
-    { name: 'Offers', path: '/offers' },
-    { name: 'Orders', path: '/orders' },
-    { name: 'About', path: '/about' },
+    { name: 'Home', path: '/', icon: <Home className="w-5 h-5 mb-1" /> },
+    { name: 'Menu', path: '/menu', icon: <Utensils className="w-5 h-5 mb-1" /> },
+    { name: 'Offers', path: '/offers', icon: <Tag className="w-5 h-5 mb-1" /> },
+    { name: 'Orders', path: '/orders', icon: <ShoppingBag className="w-5 h-5 mb-1" /> },
+    { name: 'Profile', path: '/profile', icon: <User className="w-5 h-5 mb-1" /> },
   ];
 
   return (
@@ -24,13 +24,8 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            {/* Mobile menu button (Hamburger) */}
-            <button
-              onClick={() => setIsOpen(true)}
-              className="text-gray-500 hover:text-gray-900 focus:outline-none md:hidden mr-4"
-            >
-              <MenuIcon className="w-6 h-6" />
-            </button>
+            {/* Desktop logo (hidden mobile hamburger) */}
+            <div className="hidden md:block mr-4" />
             <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-2xl font-bold text-primary-600">Elai Virundhu</span>
             </Link>
@@ -38,7 +33,7 @@ const Navbar: React.FC = () => {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex md:items-center md:space-x-8">
-            {navLinks.map((link) => (
+            {navLinks.filter(link => link.name !== 'Profile').map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
@@ -51,6 +46,16 @@ const Navbar: React.FC = () => {
                 {link.name}
               </Link>
             ))}
+            <Link
+              to="/about"
+              className={`${
+                isActive('/about')
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-gray-500 hover:text-gray-900 hover:border-b-2 hover:border-gray-300'
+              } px-1 py-2 text-sm font-medium transition-colors`}
+            >
+              About
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
@@ -84,48 +89,23 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Slide-in Drawer */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => setIsOpen(false)}
-      />
-      
-      <div 
-        className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out md:hidden shadow-2xl flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <span className="text-xl font-bold text-primary-600">Menu</span>
-          <button onClick={() => setIsOpen(false)} className="p-2 text-gray-500 hover:text-gray-900 rounded-full hover:bg-gray-100 transition">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 pb-safe">
+        <div className="flex justify-around items-center h-16 px-2">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.path}
-              className={`${
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
                 isActive(link.path)
-                  ? 'bg-primary-50 text-primary-700 border-r-4 border-primary-500'
-                  : 'text-gray-600 hover:bg-gray-50'
-              } flex items-center px-4 py-3 rounded-lg text-base font-medium transition-colors`}
-              onClick={() => setIsOpen(false)}
+                  ? 'text-primary-600'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
             >
-              {link.name}
+              {link.icon}
+              <span className="text-[10px] font-medium">{link.name}</span>
             </Link>
           ))}
-        </div>
-        
-        <div className="p-4 border-t border-gray-100">
-          <Link
-            to="/profile"
-            className="flex items-center justify-center w-full px-4 py-3 text-white bg-primary-600 hover:bg-primary-700 rounded-xl font-medium transition-colors shadow-sm"
-            onClick={() => setIsOpen(false)}
-          >
-            <User className="w-5 h-5 mr-2" />
-            My Account
-          </Link>
         </div>
       </div>
     </nav>

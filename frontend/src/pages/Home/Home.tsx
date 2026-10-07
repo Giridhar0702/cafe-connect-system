@@ -42,7 +42,7 @@ const Home: React.FC = () => {
           slider.scrollBy({ left: 304, behavior: 'smooth' });
         }
       }
-    }, 900);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);

@@ -11,14 +11,12 @@ import OrderTracking from '../pages/Orders/OrderTracking';
 import Orders from '../pages/Orders/OrdersPage';
 import Profile from '../pages/Profile/ProfilePage';
 import About from '../pages/About/About';
-import Offers from '../pages/Offers/OffersPage';
 import AdminLayout from '../components/layout/Sidebar/AdminLayout';
 import Dashboard from '../pages/Admin/Dashboard';
 import FoodManagement from '../pages/Admin/FoodManagement';
 import AddFood from '../pages/Admin/AddFood';
 import EditFood from '../pages/Admin/EditFood';
 import OrdersManagement from '../pages/Admin/OrdersManagement';
-import OffersManagement from '../pages/Admin/OffersManagement';
 import LocationsManagement from '../pages/Admin/LocationsManagement';
 
 function App() {
@@ -29,7 +27,6 @@ function App() {
           {/* Customer Routes */}
           <Route path="/" element={<><Navbar /><Home /></>} />
           <Route path="/menu" element={<><Navbar /><Menu /></>} />
-          <Route path="/offers" element={<><Navbar /><Offers /></>} />
           <Route path="/about" element={<><Navbar /><About /></>} />
           <Route path="/food/:id" element={<><Navbar /><FoodDetails /></>} />
           <Route path="/cart" element={<><Navbar /><Cart /></>} />
@@ -46,7 +43,6 @@ function App() {
             <Route path="foods/add" element={<AddFood />} />
             <Route path="foods/:id/edit" element={<EditFood />} />
             <Route path="orders" element={<OrdersManagement />} />
-            <Route path="offers" element={<OffersManagement />} />
             <Route path="locations" element={<LocationsManagement />} />
             {/* Additional admin routes could go here */}
           </Route>

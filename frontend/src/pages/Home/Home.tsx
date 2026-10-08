@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { Star, ChevronRight, Search, MapPin, Plus, Minus, Mail, Phone } from 'lucide-react';
+import { Star, ChevronRight, MapPin, Plus, Minus, Mail, Phone } from 'lucide-react';
 
 const VegIcon = () => (
   <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-green-600 rounded-[3px] bg-white shrink-0">
@@ -22,7 +22,6 @@ const isNonVeg = (name: string, description: string) => {
 const Home: React.FC = () => {
   const { foods, categories, cart, addToCart, updateCartQuantity } = useStore();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
   const sliderRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll logic for mobile slider
@@ -65,13 +64,6 @@ const Home: React.FC = () => {
     e.stopPropagation();
     const currentQty = getCartQuantity(foodId);
     if (currentQty > 0) updateCartQuantity(foodId, currentQty - 1);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/menu?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
   };
 
   const categoryImages: Record<string, string> = {
@@ -119,26 +111,6 @@ const Home: React.FC = () => {
             Discover the best food & drinks in Sathyamangalam
           </p>
           
-          <form onSubmit={handleSearch} className="w-full max-w-3xl flex bg-white rounded-xl shadow-2xl overflow-hidden p-2 mb-8 pointer-events-auto">
-            <div className="flex items-center px-4 border-r border-gray-200 w-1/3 hidden md:flex">
-              <MapPin className="w-5 h-5 text-primary-500 mr-2 shrink-0" />
-              <input type="text" placeholder="Sathyamangalam" disabled className="w-full bg-transparent text-gray-700 focus:outline-none placeholder-gray-400" />
-            </div>
-            <div className="flex items-center px-4 flex-1">
-              <Search className="w-5 h-5 text-gray-400 mr-2 shrink-0" />
-              <input 
-                type="text" 
-                placeholder="Search for restaurant, cuisine or a dish" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full py-3 bg-transparent text-gray-700 focus:outline-none placeholder-gray-400" 
-              />
-            </div>
-            <button type="submit" className="px-6 py-3 bg-primary-600 text-white font-bold rounded-lg hover:bg-primary-700 transition">
-              Search
-            </button>
-          </form>
-
           <Link 
             to="/menu" 
             className="px-10 py-4 bg-white text-primary-600 font-extrabold text-lg rounded-full hover:bg-gray-50 hover:scale-105 transition-all shadow-xl flex items-center pointer-events-auto"

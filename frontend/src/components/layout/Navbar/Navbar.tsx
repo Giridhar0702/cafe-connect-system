@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Search, Home, Utensils, Tag, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, User, Search, Home, Utensils, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../../store/StoreContext';
 
 const Navbar: React.FC = () => {
@@ -13,7 +13,6 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home className="w-5 h-5 mb-1" /> },
     { name: 'Menu', path: '/menu', icon: <Utensils className="w-5 h-5 mb-1" /> },
-    { name: 'Offers', path: '/offers', icon: <Tag className="w-5 h-5 mb-1" /> },
     { name: 'Orders', path: '/orders', icon: <ShoppingBag className="w-5 h-5 mb-1" /> },
     { name: 'Profile', path: '/profile', icon: <User className="w-5 h-5 mb-1" /> },
   ];

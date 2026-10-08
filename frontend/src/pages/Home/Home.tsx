@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { Star, ChevronRight, MapPin, Plus, Minus, Mail, Phone } from 'lucide-react';
+import { Star, ChevronRight, MapPin, Plus, Minus, Mail, Phone, ShoppingCart } from 'lucide-react';
 
 const VegIcon = () => (
   <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-green-600 rounded-[3px] bg-white shrink-0">
@@ -277,7 +277,7 @@ const Home: React.FC = () => {
                           onClick={(e) => handleIncrement(e, food)}
                           className="w-[90px] h-[36px] flex items-center justify-center text-[14px] font-bold text-primary-500 bg-primary-50/50 border border-primary-200 rounded-lg hover:bg-primary-50 hover:shadow-sm transition-all shadow-sm"
                         >
-                          ADD <Plus className="w-3.5 h-3.5 ml-1" strokeWidth={3} />
+                          ADD <ShoppingCart className="w-4 h-4 ml-1.5" strokeWidth={2.5} />
                         </button>
                       )}
                     </div>

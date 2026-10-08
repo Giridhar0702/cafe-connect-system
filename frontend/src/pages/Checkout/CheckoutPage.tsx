@@ -139,8 +139,11 @@ const Checkout: React.FC = () => {
     }
   }, [selectedLocation, setValue]);
 
+  // Prevent redirecting back to cart if the cart was cleared because an order was successfully placed
+  const isOrderPlaced = React.useRef(false);
+
   React.useEffect(() => { 
-    if (cart.length === 0) {
+    if (cart.length === 0 && !isOrderPlaced.current) {
       navigate('/cart'); 
     }
   }, [cart.length, navigate]);
@@ -177,6 +180,7 @@ const Checkout: React.FC = () => {
     };
 
     const orderId = placeOrder(orderData);
+    isOrderPlaced.current = true;
     navigate(`/order-success/${orderId}`);
   };
 

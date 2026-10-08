@@ -234,52 +234,67 @@ const Home: React.FC = () => {
                 <div 
                   key={food.id} 
                   onClick={() => navigate(`/food/${food.id}`)}
-                  className="min-w-[280px] w-full md:min-w-0 snap-center bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col group cursor-pointer"
+                  className="min-w-[280px] w-full md:min-w-0 snap-center bg-white rounded-[1.5rem] p-3 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300 border border-gray-100 flex flex-col group cursor-pointer overflow-hidden"
                 >
-                  <div className="relative h-48 rounded-xl overflow-hidden mb-4">
-                    <img src={food.imageUrl} alt={food.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="relative h-52 rounded-[1.2rem] overflow-hidden mb-4 shadow-inner">
+                    <div className="absolute inset-0 bg-gray-100 animate-pulse"></div>
+                    <img 
+                      src={food.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'} 
+                      alt={food.name} 
+                      className="w-full h-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-700 ease-in-out" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+                        (e.target as HTMLImageElement).onerror = null;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     {!food.available && (
-                      <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] flex items-center justify-center">
-                        <span className="text-gray-900 font-bold px-4 py-2 bg-white rounded-full text-sm shadow-md">Sold Out</span>
+                      <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-20">
+                        <span className="text-gray-900 font-extrabold px-5 py-2 bg-white rounded-full text-sm shadow-xl tracking-wide uppercase">Sold Out</span>
                       </div>
                     )}
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold flex items-center shadow-sm">
-                      <Star className="w-3.5 h-3.5 text-green-600 mr-1 fill-current" />
+                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-lg z-20 border border-white/20">
+                      <Star className="w-3.5 h-3.5 text-orange-500 mr-1.5 fill-current" />
                       {food.rating}
                     </div>
                   </div>
                   
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="text-lg font-bold text-gray-800 line-clamp-1 group-hover:text-primary-600 transition-colors">{food.name}</h3>
-                    {isNonVeg(food.name, food.description) ? <NonVegIcon /> : <VegIcon />}
-                  </div>
-                  
-                  <p className="text-gray-500 text-sm line-clamp-1 mb-4">{food.description}</p>
-                  
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
-                    <div className="font-bold text-gray-800 text-lg">₹{food.price}</div>
+                  <div className="px-2 flex flex-col flex-grow">
+                    <div className="flex justify-between items-start mb-1.5">
+                      <h3 className="text-[1.1rem] font-bold text-gray-800 line-clamp-1 group-hover:text-primary-600 transition-colors leading-tight">{food.name}</h3>
+                      <div className="mt-1 shrink-0">{isNonVeg(food.name, food.description) ? <NonVegIcon /> : <VegIcon />}</div>
+                    </div>
                     
-                    <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
-                      {!food.available ? (
-                        <span className="text-sm font-medium text-red-500">Unavailable</span>
-                      ) : qty > 0 ? (
-                        <div className="flex items-center justify-between w-[90px] h-[36px] bg-primary-50 border border-primary-200 rounded-lg overflow-hidden shadow-sm">
-                          <button onClick={(e) => handleDecrement(e, food.id)} className="w-1/3 h-full flex items-center justify-center text-primary-600 hover:bg-primary-100 transition">
-                            <Minus className="w-3.5 h-3.5" strokeWidth={3} />
+                    <p className="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">{food.description}</p>
+                    
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100/80">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-0.5">Price</span>
+                        <div className="font-extrabold text-gray-900 text-lg">₹{food.price}</div>
+                      </div>
+                      
+                      <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+                        {!food.available ? (
+                          <span className="text-sm font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-lg">Unavailable</span>
+                        ) : qty > 0 ? (
+                          <div className="flex items-center justify-between w-[95px] h-[40px] bg-primary-50 border border-primary-200 rounded-xl overflow-hidden shadow-sm">
+                            <button onClick={(e) => handleDecrement(e, food.id)} className="w-1/3 h-full flex items-center justify-center text-primary-600 hover:bg-primary-100 transition-colors active:bg-primary-200">
+                              <Minus className="w-3.5 h-3.5" strokeWidth={3} />
+                            </button>
+                            <span className="w-1/3 text-center text-sm font-extrabold text-primary-700">{qty}</span>
+                            <button onClick={(e) => handleIncrement(e, food)} className="w-1/3 h-full flex items-center justify-center text-primary-600 hover:bg-primary-100 transition-colors active:bg-primary-200">
+                              <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={(e) => handleIncrement(e, food)}
+                            className="w-[95px] h-[40px] flex items-center justify-center text-[13px] font-bold text-primary-600 bg-white border-2 border-primary-100 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-all shadow-sm active:scale-95"
+                          >
+                            ADD <ShoppingCart className="w-4 h-4 ml-1.5 opacity-80" strokeWidth={2.5} />
                           </button>
-                          <span className="w-1/3 text-center text-sm font-bold text-primary-600">{qty}</span>
-                          <button onClick={(e) => handleIncrement(e, food)} className="w-1/3 h-full flex items-center justify-center text-primary-600 hover:bg-primary-100 transition">
-                            <Plus className="w-3.5 h-3.5" strokeWidth={3} />
-                          </button>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={(e) => handleIncrement(e, food)}
-                          className="w-[90px] h-[36px] flex items-center justify-center text-[14px] font-bold text-primary-500 bg-primary-50/50 border border-primary-200 rounded-lg hover:bg-primary-50 hover:shadow-sm transition-all shadow-sm"
-                        >
-                          ADD <ShoppingCart className="w-4 h-4 ml-1.5" strokeWidth={2.5} />
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -330,7 +345,7 @@ const Home: React.FC = () => {
               <ul className="space-y-4 text-gray-400 font-medium">
                 <li className="flex items-start">
                   <MapPin className="w-5 h-5 mr-3 text-gray-600 shrink-0 mt-0.5" />
-                  <span>123 Food Street, Sathyamangalam</span>
+                  <span className="text-sm">F6PW+VPP, Sanarpathi, Ariyappampalayam,<br/>Tamil Nadu 638402<br/><span className="text-gray-500">(located on the Sathy to Gobi Main Road, right opposite the Royal Enfield showroom)</span></span>
                 </li>
                 <li className="flex items-center">
                   <Mail className="w-5 h-5 mr-3 text-gray-600 shrink-0" />

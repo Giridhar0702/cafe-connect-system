@@ -45,10 +45,10 @@ const About: React.FC = () => {
                   <MapPin className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Location</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  123 Food Street, Culinary District<br/>
-                  BIT Campus<br/>
-                  Tamil Nadu, India - 600001
+                <p className="text-gray-700 leading-relaxed text-sm">
+                  F6PW+VPP, Sanarpathi, Ariyappampalayam<br/>
+                  Tamil Nadu 638402<br/>
+                  <span className="text-gray-500 block mt-2">(located on the Sathy to Gobi Main Road, right opposite the Royal Enfield showroom)</span>
                 </p>
               </div>
 

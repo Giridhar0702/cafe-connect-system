@@ -73,26 +73,29 @@ const DragonGame = () => {
       }
 
       // Draw Dino (Dragon)
-      ctx.fillStyle = '#b91c1c'; // primary red
-      ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(dino.x + 25, dino.y + 5, 5, 5); // eye
+      ctx.font = '40px Arial';
+      // Flip the emoji vertically/horizontally if needed, but standard fillText is fine
+      ctx.fillText('🦖', dino.x, dino.y + dino.height - 5);
 
       // Obstacles
       if (frameRef.current % 90 === 0) {
+        // Randomize obstacle type (cactus or palm tree)
+        const isCactus = Math.random() > 0.5;
         obstaclesRef.current.push({
           x: canvas.width,
           y: 160,
-          width: 20,
-          height: 30
-        });
+          width: 30, // Increased width slightly to match emoji size
+          height: 30, // Increased height slightly to match emoji size
+          type: isCactus ? '🌵' : '🌴' // Custom property for emoji type
+        } as any);
       }
 
       for (let i = 0; i < obstaclesRef.current.length; i++) {
-        const obs = obstaclesRef.current[i];
+        const obs = obstaclesRef.current[i] as any;
         obs.x -= 6;
-        ctx.fillStyle = '#1f2937'; // gray
-        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+        
+        ctx.font = '30px Arial';
+        ctx.fillText(obs.type, obs.x, obs.y + obs.height - 5);
 
         // Collision detection
         if (
@@ -134,10 +137,10 @@ const DragonGame = () => {
       
       <div 
         className="relative w-full border-2 border-gray-200 rounded-2xl overflow-hidden bg-gray-50 shadow-inner cursor-pointer" 
-        style={{ height: '200px' }} 
+        style={{ height: 'auto', minHeight: '150px', aspectRatio: '3/1' }} 
         onClick={() => { if(gameOver) resetGame(); else jump(); }}
       >
-        <canvas ref={canvasRef} width={600} height={200} className="w-full h-full block object-cover" />
+        <canvas ref={canvasRef} width={600} height={200} className="w-full h-full block object-contain" />
         
         {!isPlaying && !gameOver && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">

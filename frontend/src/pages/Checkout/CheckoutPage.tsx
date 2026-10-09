@@ -154,8 +154,10 @@ const Checkout: React.FC = () => {
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const delivery = subtotal > 0 ? 30 : 0;
-  const tax = subtotal * 0.05;
-  const total = subtotal + delivery + tax;
+  const cgst = subtotal * 0.025; // 2.5% CGST
+  const sgst = subtotal * 0.025; // 2.5% SGST
+  const exactTotal = subtotal + delivery + cgst + sgst;
+  const total = Math.ceil(exactTotal); // Round to greater integer
 
   const onSubmit = (data: CheckoutFormValues) => {
     const loc = locations.find(l => l.id === data.locationType);
@@ -344,9 +346,19 @@ const Checkout: React.FC = () => {
                   <span className="font-medium text-gray-900">₹{delivery.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tax</span>
-                  <span className="font-medium text-gray-900">₹{tax.toFixed(2)}</span>
+                  <span>CGST (2.5%)</span>
+                  <span className="font-medium text-gray-900">₹{cgst.toFixed(2)}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span>SGST (2.5%)</span>
+                  <span className="font-medium text-gray-900">₹{sgst.toFixed(2)}</span>
+                </div>
+                {exactTotal !== total && (
+                  <div className="flex justify-between text-sm text-gray-400">
+                    <span>Rounding</span>
+                    <span>+₹{(total - exactTotal).toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="border-t pt-3 mt-3 flex justify-between items-center">
                   <span className="text-lg font-bold text-gray-900">Total</span>
                   <span className="text-2xl font-bold text-primary-600">₹{total.toFixed(2)}</span>

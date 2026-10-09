@@ -31,6 +31,7 @@ const FoodManagement: React.FC = () => {
               <th className="p-4 font-medium text-gray-600">Name</th>
               <th className="p-4 font-medium text-gray-600">Category</th>
               <th className="p-4 font-medium text-gray-600">Price</th>
+              <th className="p-4 font-medium text-gray-600">Stock</th>
               <th className="p-4 font-medium text-gray-600">Status</th>
               <th className="p-4 font-medium text-gray-600">Actions</th>
             </tr>
@@ -38,9 +39,18 @@ const FoodManagement: React.FC = () => {
           <tbody>
             {foods.map(food => (
               <tr key={food.id} className="border-b border-gray-50 last:border-0">
-                <td className="p-4">{food.name}</td>
+                <td className="p-4 font-medium text-gray-900">{food.name}</td>
                 <td className="p-4">{food.category}</td>
-                <td className="p-4">₹{food.price}</td>
+                <td className="p-4 font-medium">₹{food.price}</td>
+                <td className="p-4">
+                  {food.stock != null ? (
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${food.stock > 0 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                      {food.stock} left
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 text-sm">Unlimited</span>
+                  )}
+                </td>
                 <td className="p-4">
                   <div className="flex items-center space-x-3">
                     <button

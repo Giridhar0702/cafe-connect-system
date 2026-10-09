@@ -309,7 +309,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-12">
             <div className="col-span-1 lg:col-span-2">
-              <h3 className="text-3xl font-extrabold text-white mb-6 italic tracking-tight">Ela Cafe</h3>
+              <h3 className="text-3xl font-extrabold text-white mb-6 italic tracking-tight">Elai Virundhu & Cafe</h3>
               <p className="text-gray-400 max-w-sm mb-8 leading-relaxed">
                 Serving the best authentic food in town. Order online and experience the taste of perfection right at your doorstep.
               </p>
@@ -360,7 +360,7 @@ const Home: React.FC = () => {
           </div>
           
           <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between text-gray-500 text-sm font-medium">
-            <p className="mb-4 md:mb-0">&copy; 2026 Ela Cafe & Elai Virunthu. All rights reserved.</p>
+            <p className="mb-4 md:mb-0">&copy; 2026 Elai Virundhu & Cafe. All rights reserved.</p>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
               <Link to="/admin" className="hover:text-primary-400 transition-colors">Admin Login</Link>
               <span className="text-gray-800 hidden md:inline">•</span>

@@ -14,6 +14,7 @@ const foodSchema = z.object({
   imageUrl: z.string().url('Valid image URL is required'),
   available: z.boolean(),
   featured: z.boolean(),
+  stockLimit: z.string().optional(),
 });
 
 type FoodFormValues = z.infer<typeof foodSchema>;
@@ -40,6 +41,7 @@ const EditFood: React.FC = () => {
         imageUrl: food.imageUrl,
         available: food.available,
         featured: food.featured,
+        stockLimit: food.stock != null ? food.stock.toString() : '',
       });
     }
   }, [food, reset]);
@@ -49,10 +51,15 @@ const EditFood: React.FC = () => {
   }
 
   const onSubmit = (data: FoodFormValues) => {
-    updateFood({
+    const updatedFood = {
       ...food,
       ...data,
-    });
+      stock: data.stockLimit ? parseInt(data.stockLimit) : undefined,
+    };
+    // Clean up temporary form field
+    delete (updatedFood as any).stockLimit;
+    
+    updateFood(updatedFood);
     navigate('/admin/foods');
   };
 
@@ -96,6 +103,11 @@ const EditFood: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Preparation Time (minutes)</label>
               <input {...register('prepTime')} type="number" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
               {errors.prepTime && <p className="mt-1 text-sm text-red-600">{errors.prepTime.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Daily Limit (Optional)</label>
+              <input {...register('stockLimit')} type="number" placeholder="Leave blank for unlimited" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
             </div>
             
             <div className="md:col-span-2">

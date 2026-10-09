@@ -9,8 +9,10 @@ const Cart: React.FC = () => {
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const delivery = subtotal > 0 ? 30 : 0;
-  const tax = subtotal * 0.05; // 5% tax
-  const total = subtotal + delivery + tax;
+  const cgst = subtotal * 0.025; // 2.5% CGST
+  const sgst = subtotal * 0.025; // 2.5% SGST
+  const exactTotal = subtotal + delivery + cgst + sgst;
+  const total = Math.ceil(exactTotal); // Round to greater integer
 
   if (cart.length === 0) {
     return (
@@ -105,9 +107,19 @@ const Cart: React.FC = () => {
                   <span className="font-medium text-gray-900">₹{delivery.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tax (5%)</span>
-                  <span className="font-medium text-gray-900">₹{tax.toFixed(2)}</span>
+                  <span>CGST (2.5%)</span>
+                  <span className="font-medium text-gray-900">₹{cgst.toFixed(2)}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span>SGST (2.5%)</span>
+                  <span className="font-medium text-gray-900">₹{sgst.toFixed(2)}</span>
+                </div>
+                {exactTotal !== total && (
+                  <div className="flex justify-between text-sm text-gray-400">
+                    <span>Rounding</span>
+                    <span>+₹{(total - exactTotal).toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="border-t border-dashed border-gray-200 pt-4 mt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-gray-900">TOTAL</span>

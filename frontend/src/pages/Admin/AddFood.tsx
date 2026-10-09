@@ -14,6 +14,7 @@ const foodSchema = z.object({
   imageUrl: z.string().url('Valid image URL is required'),
   available: z.boolean(),
   featured: z.boolean(),
+  stockLimit: z.string().optional(),
 });
 
 type FoodFormValues = z.infer<typeof foodSchema>;
@@ -27,6 +28,7 @@ const AddFood: React.FC = () => {
     defaultValues: {
       available: true,
       featured: false,
+      stockLimit: '',
     }
   });
 
@@ -35,7 +37,11 @@ const AddFood: React.FC = () => {
       ...data,
       id: `f${Date.now()}`,
       rating: 0,
+      stock: data.stockLimit ? parseInt(data.stockLimit) : undefined,
     };
+    // Clean up temporary form field
+    delete (newFood as any).stockLimit;
+    
     addFood(newFood);
     navigate('/admin/foods');
   };
@@ -80,6 +86,11 @@ const AddFood: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Preparation Time (minutes)</label>
               <input {...register('prepTime')} type="number" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
               {errors.prepTime && <p className="mt-1 text-sm text-red-600">{errors.prepTime.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Daily Limit (Optional)</label>
+              <input {...register('stockLimit')} type="number" placeholder="Leave blank for unlimited" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
             </div>
             
             <div className="md:col-span-2">

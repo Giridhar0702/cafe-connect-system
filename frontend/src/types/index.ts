@@ -1,5 +1,7 @@
 export type FoodCategory = 'Biryani' | 'Starters' | 'Main Course' | 'Chinese' | 'Beverages' | 'Desserts' | string;
 
+export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+
 export interface FoodItem {
   id: string;
   name: string;
@@ -11,6 +13,9 @@ export interface FoodItem {
   prepTime: number;
   available: boolean;
   featured: boolean;
+  stock?: number;
+  dailyLimits?: Partial<Record<DayOfWeek, number>>;
+  lastStockReset?: string;
 }
 
 export interface CartItem extends FoodItem {

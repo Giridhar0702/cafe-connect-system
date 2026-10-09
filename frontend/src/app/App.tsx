@@ -19,6 +19,8 @@ import EditFood from '../pages/Admin/EditFood';
 import OrdersManagement from '../pages/Admin/OrdersManagement';
 import LocationsManagement from '../pages/Admin/LocationsManagement';
 
+import StockManagement from '../pages/Admin/StockManagement';
+
 function App() {
   return (
     <StoreProvider>
@@ -42,6 +44,7 @@ function App() {
             <Route path="foods" element={<FoodManagement />} />
             <Route path="foods/add" element={<AddFood />} />
             <Route path="foods/:id/edit" element={<EditFood />} />
+            <Route path="stock" element={<StockManagement />} />
             <Route path="orders" element={<OrdersManagement />} />
             <Route path="locations" element={<LocationsManagement />} />
             {/* Additional admin routes could go here */}

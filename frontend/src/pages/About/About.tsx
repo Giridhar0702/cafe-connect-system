@@ -10,12 +10,12 @@ const About: React.FC = () => {
           <div className="h-64 sm:h-96 w-full relative">
             <img 
               src="/shop-outdoor.jpg" 
-              alt="Ela Cafe Outdoor Area" 
+              alt="Elai Virundhu & Cafe Outdoor Area" 
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight text-center px-4">
-                About Elai Virundhu
+                About Elai Virundhu & Cafe
               </h1>
             </div>
           </div>
@@ -23,7 +23,7 @@ const About: React.FC = () => {
           <div className="p-8 md:p-12 lg:p-16 max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Our Story</h2>
             <p className="text-gray-600 mb-8 text-lg leading-relaxed text-center">
-              Welcome to Elai Virundhu! We are passionate about serving the most delicious and authentic dishes that bring people together. 
+              Welcome to Elai Virundhu & Cafe! We are passionate about serving the most delicious and authentic dishes that bring people together. 
               Our journey started with a simple belief: great food creates great memories. Our master chefs use only the freshest, locally sourced ingredients, carefully selected to create memorable culinary experiences for you and your family. 
               Whether you're craving a quick bite or planning a grand feast, we are here to serve you with joy and perfection.
             </p>

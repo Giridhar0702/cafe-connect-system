@@ -133,6 +133,44 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       status: 'Placed',
       date: new Date().toISOString()
     };
+    
+    // Handle stock decrement and daily resets
+    const todayStr = new Date().toISOString().split('T')[0];
+    const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+    setFoods(prevFoods => prevFoods.map(food => {
+      let currentStock = food.stock;
+      let lastReset = food.lastStockReset;
+      let isAvailable = food.available;
+
+      // Reset stock if it's a new day
+      if (lastReset !== todayStr) {
+        currentStock = food.dailyLimits?.[dayName as keyof typeof food.dailyLimits];
+        lastReset = todayStr;
+        if (currentStock === 0) {
+          isAvailable = false;
+        } else if (currentStock !== undefined && currentStock > 0) {
+          isAvailable = true; // reactivate if they have stock for today
+        }
+      }
+
+      // Decrement stock for ordered items
+      const orderedItem = orderData.items.find(item => item.id === food.id);
+      if (orderedItem && currentStock != null) {
+        currentStock = Math.max(0, currentStock - orderedItem.quantity);
+        if (currentStock === 0) {
+          isAvailable = false;
+        }
+      }
+
+      return {
+        ...food,
+        stock: currentStock,
+        lastStockReset: lastReset,
+        available: isAvailable
+      };
+    }));
+
     setOrders([newOrder, ...orders]);
     clearCart();
     return id;

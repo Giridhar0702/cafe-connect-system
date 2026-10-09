@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
             {/* Desktop logo (hidden mobile hamburger) */}
             <div className="hidden md:block mr-4" />
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold text-primary-600">Elai Virundhu</span>
+              <span className="text-2xl font-bold text-primary-600">Elai Virundhu & Cafe</span>
             </Link>
           </div>
 

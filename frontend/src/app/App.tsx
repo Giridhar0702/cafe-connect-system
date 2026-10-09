@@ -18,8 +18,27 @@ import AddFood from '../pages/Admin/AddFood';
 import EditFood from '../pages/Admin/EditFood';
 import OrdersManagement from '../pages/Admin/OrdersManagement';
 import LocationsManagement from '../pages/Admin/LocationsManagement';
+import AdminLogin from '../pages/Admin/AdminLogin';
+import StoreClosed from '../components/layout/StoreClosed';
+import { useStore } from '../store/StoreContext';
+import { Outlet } from 'react-router-dom';
 
 import StockManagement from '../pages/Admin/StockManagement';
+
+const CustomerLayout: React.FC = () => {
+  const { isStoreOpen, storeReopenDate } = useStore();
+  
+  if (!isStoreOpen) {
+    return <StoreClosed reopenDate={storeReopenDate} />;
+  }
+  
+  return (
+    <>
+      <Navbar />
+      <Outlet />
+    </>
+  );
+};
 
 function App() {
   return (
@@ -27,18 +46,21 @@ function App() {
       <Router>
         <Routes>
           {/* Customer Routes */}
-          <Route path="/" element={<><Navbar /><Home /></>} />
-          <Route path="/menu" element={<><Navbar /><Menu /></>} />
-          <Route path="/about" element={<><Navbar /><About /></>} />
-          <Route path="/food/:id" element={<><Navbar /><FoodDetails /></>} />
-          <Route path="/cart" element={<><Navbar /><Cart /></>} />
-          <Route path="/checkout" element={<><Navbar /><Checkout /></>} />
-          <Route path="/order-success/:id" element={<><Navbar /><OrderSuccess /></>} />
-          <Route path="/orders" element={<><Navbar /><Orders /></>} />
-          <Route path="/orders/:id" element={<><Navbar /><OrderTracking /></>} />
-          <Route path="/profile" element={<><Navbar /><Profile /></>} />
+          <Route path="/" element={<CustomerLayout />}>
+            <Route index element={<Home />} />
+            <Route path="menu" element={<Menu />} />
+            <Route path="about" element={<About />} />
+            <Route path="food/:id" element={<FoodDetails />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="checkout" element={<Checkout />} />
+            <Route path="order-success/:id" element={<OrderSuccess />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="orders/:id" element={<OrderTracking />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
           
           {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="foods" element={<FoodManagement />} />

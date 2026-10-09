@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/StoreContext';
-import { Package, Minus, Plus, Calendar } from 'lucide-react';
+import { Package, Minus, Plus, Calendar, ArrowLeft } from 'lucide-react';
 import type { FoodItem, DayOfWeek } from '../../types';
 
 const DAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -104,6 +104,7 @@ const StockManagement: React.FC = () => {
   const { foods, updateFood } = useStore();
   const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' }) as DayOfWeek;
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>(todayName);
+  const [view, setView] = useState<'days' | 'menu'>('days');
 
   return (
     <div className="space-y-6">
@@ -112,49 +113,75 @@ const StockManagement: React.FC = () => {
           <Package className="w-6 h-6 mr-3 text-primary-600" />
           Daily Stock Limits
         </h1>
+        {view === 'menu' && (
+          <button 
+            onClick={() => setView('days')}
+            className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Days
+          </button>
+        )}
       </div>
 
-      {/* Day Selector */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 overflow-x-auto">
-        <div className="flex space-x-2 min-w-max">
+      {view === 'days' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {DAYS.map(day => (
             <button
               key={day}
-              onClick={() => setSelectedDay(day)}
-              className={`flex-1 flex items-center justify-center px-4 py-3 rounded-xl font-medium transition ${
-                selectedDay === day 
-                  ? 'bg-primary-600 text-white shadow-md' 
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
+              onClick={() => {
+                setSelectedDay(day);
+                setView('menu');
+              }}
+              className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-primary-200 transition-all group text-left flex flex-col justify-between h-32"
             >
-              <Calendar className="w-4 h-4 mr-2" />
-              {day}
-              {day === todayName && <span className="ml-2 text-xs bg-white/20 px-2 py-0.5 rounded-full">Today</span>}
+              <div className="flex justify-between items-start">
+                <span className="font-bold text-xl text-gray-800 group-hover:text-primary-600 transition-colors">
+                  {day}
+                </span>
+                <div className={`p-2 rounded-xl ${day === todayName ? 'bg-primary-100 text-primary-600' : 'bg-gray-50 text-gray-400'}`}>
+                  <Calendar className="w-6 h-6" />
+                </div>
+              </div>
+              {day === todayName && (
+                <span className="inline-block mt-2 px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full w-max">
+                  Today
+                </span>
+              )}
             </button>
           ))}
         </div>
-      </div>
-      
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left min-w-[700px]">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="p-4 font-medium text-gray-600">Food Name</th>
-                <th className="p-4 font-medium text-gray-600">Category</th>
-                <th className="p-4 font-medium text-gray-600">Current Status</th>
-                <th className="p-4 font-medium text-gray-600">Daily Stock Limit</th>
-                <th className="p-4 font-medium text-gray-600 w-48">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {foods.map(food => (
-                <StockRow key={food.id} food={food} updateFood={updateFood} selectedDay={selectedDay} />
-              ))}
-            </tbody>
-          </table>
+      ) : (
+        <div className="space-y-4">
+          <div className="bg-primary-50 border border-primary-100 rounded-xl p-4 flex items-center">
+            <Calendar className="w-5 h-5 text-primary-600 mr-3" />
+            <span className="font-medium text-primary-900">
+              Editing Stock Limits for <span className="font-bold">{selectedDay}</span>
+            </span>
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left min-w-[700px]">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    <th className="p-4 font-medium text-gray-600">Food Name</th>
+                    <th className="p-4 font-medium text-gray-600">Category</th>
+                    <th className="p-4 font-medium text-gray-600">Current Status</th>
+                    <th className="p-4 font-medium text-gray-600">Daily Stock Limit</th>
+                    <th className="p-4 font-medium text-gray-600 w-48">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {foods.map(food => (
+                    <StockRow key={food.id} food={food} updateFood={updateFood} selectedDay={selectedDay} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

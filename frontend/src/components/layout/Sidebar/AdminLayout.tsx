@@ -32,10 +32,16 @@ const playNotificationSound = () => {
 const AdminLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { orders } = useStore();
+  const { orders, isAdminLoggedIn, setAdminLoggedIn } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const prevOrdersLength = useRef(orders.length);
+
+  useEffect(() => {
+    if (!isAdminLoggedIn) {
+      navigate('/admin/login');
+    }
+  }, [isAdminLoggedIn, navigate]);
 
   useEffect(() => {
     // Detect new orders
@@ -61,6 +67,10 @@ const AdminLayout: React.FC = () => {
     { name: 'Locations', path: '/admin/locations', icon: <MapPin className="w-5 h-5" /> },
     { name: 'Reviews', path: '/admin/reviews', icon: <MessageSquare className="w-5 h-5" /> },
   ];
+
+  if (!isAdminLoggedIn) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -95,9 +105,15 @@ const AdminLayout: React.FC = () => {
           ))}
         </nav>
         <div className="p-4 border-t border-gray-800">
-          <Link to="/" className="flex items-center px-4 py-3 text-gray-400 hover:text-white transition">
-            <LogOut className="w-5 h-5 mr-3" /> Exit Admin
-          </Link>
+          <button 
+            onClick={() => {
+              setAdminLoggedIn(false);
+              navigate('/admin/login');
+            }}
+            className="flex items-center w-full px-4 py-3 text-red-400 hover:text-red-300 transition"
+          >
+            <LogOut className="w-5 h-5 mr-3" /> Logout
+          </button>
         </div>
       </div>
 

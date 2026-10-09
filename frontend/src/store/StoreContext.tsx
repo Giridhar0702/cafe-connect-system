@@ -11,6 +11,13 @@ interface StoreContextType {
   cart: CartItem[];
   locations: DeliveryLocation[];
   
+  isAdminLoggedIn: boolean;
+  setAdminLoggedIn: (status: boolean) => void;
+  
+  isStoreOpen: boolean;
+  storeReopenDate: string;
+  setStoreStatus: (isOpen: boolean, reopenDate?: string) => void;
+  
   // Actions
   addFood: (food: FoodItem) => void;
   updateFood: (food: FoodItem) => void;
@@ -83,6 +90,31 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const saved = localStorage.getItem('locations');
     return saved ? JSON.parse(saved) : initialLocations;
   });
+
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('isAdminLoggedIn') === 'true';
+  });
+
+  const setAdminLoggedIn = (status: boolean) => {
+    setIsAdminLoggedIn(status);
+    localStorage.setItem('isAdminLoggedIn', String(status));
+  };
+
+  const [isStoreOpen, setIsStoreOpen] = useState<boolean>(() => {
+    const saved = localStorage.getItem('isStoreOpen');
+    return saved !== 'false';
+  });
+  
+  const [storeReopenDate, setStoreReopenDate] = useState<string>(() => {
+    return localStorage.getItem('storeReopenDate') || '';
+  });
+
+  const setStoreStatus = (isOpen: boolean, reopenDate: string = '') => {
+    setIsStoreOpen(isOpen);
+    setStoreReopenDate(reopenDate);
+    localStorage.setItem('isStoreOpen', String(isOpen));
+    localStorage.setItem('storeReopenDate', reopenDate);
+  };
 
   // Save to localStorage on change
   useEffect(() => { localStorage.setItem('foods', JSON.stringify(foods)); }, [foods]);
@@ -224,7 +256,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addToCart, removeFromCart, updateCartQuantity, clearCart,
       placeOrder, updateOrderStatus,
       addOffer, toggleOfferActive, deleteOffer,
-      locations, addLocation, updateLocation, toggleLocationActive, deleteLocation
+      locations, addLocation, updateLocation, toggleLocationActive, deleteLocation,
+      isAdminLoggedIn, setAdminLoggedIn,
+      isStoreOpen, storeReopenDate, setStoreStatus
     }}>
       {children}
     </StoreContext.Provider>

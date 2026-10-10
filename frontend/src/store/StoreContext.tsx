@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { FoodItem, FoodCategory, Order, CartItem, Review, Offer, DeliveryLocation } from '../types';
+import type { FoodItem, FoodCategory, Order, CartItem, Review, Offer, DeliveryLocation, DeliveryPartner } from '../types';
 import { initialFoods, initialCategories, initialOrders, initialReviews, initialOffers, initialLocations } from '../mocks/mockData';
 
 interface StoreContextType {
@@ -10,6 +10,7 @@ interface StoreContextType {
   offers: Offer[];
   cart: CartItem[];
   locations: DeliveryLocation[];
+  deliveryPartners: DeliveryPartner[];
   
   isAdminLoggedIn: boolean;
   setAdminLoggedIn: (status: boolean) => void;
@@ -35,7 +36,7 @@ interface StoreContextType {
   clearCart: () => void;
   
   placeOrder: (order: Omit<Order, 'id' | 'status' | 'date'>) => string;
-  updateOrderStatus: (id: string, status: Order['status']) => void;
+  updateOrderStatus: (id: string, status: Order['status'], deliveryManName?: string, deliveryManPhone?: string) => void;
   
   addOffer: (offer: Omit<Offer, 'id'>) => void;
   toggleOfferActive: (id: string) => void;
@@ -45,6 +46,11 @@ interface StoreContextType {
   updateLocation: (location: DeliveryLocation) => void;
   toggleLocationActive: (id: string) => void;
   deleteLocation: (id: string) => void;
+
+  addDeliveryPartner: (partner: Omit<DeliveryPartner, 'id'>) => void;
+  updateDeliveryPartner: (partner: DeliveryPartner) => void;
+  toggleDeliveryPartnerActive: (id: string) => void;
+  deleteDeliveryPartner: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -93,6 +99,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return saved ? JSON.parse(saved) : initialLocations;
   });
 
+  const [deliveryPartners, setDeliveryPartners] = useState<DeliveryPartner[]>(() => {
+    const saved = localStorage.getItem('deliveryPartners');
+    return saved ? JSON.parse(saved) : [
+      { id: '1', name: 'Ramesh', phone: '9876543210', active: true },
+      { id: '2', name: 'Suresh', phone: '8765432109', active: true }
+    ];
+  });
+
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
     return localStorage.getItem('isAdminLoggedIn') === 'true';
   });
@@ -139,6 +153,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => { localStorage.setItem('offers', JSON.stringify(offers)); }, [offers]);
   useEffect(() => { localStorage.setItem('cart', JSON.stringify(cart)); }, [cart]);
   useEffect(() => { localStorage.setItem('locations', JSON.stringify(locations)); }, [locations]);
+  useEffect(() => { localStorage.setItem('deliveryPartners', JSON.stringify(deliveryPartners)); }, [deliveryPartners]);
 
   const addFood = (food: FoodItem) => setFoods([...foods, food]);
   const updateFood = (updatedFood: FoodItem) => setFoods(foods.map(f => f.id === updatedFood.id ? updatedFood : f));
@@ -223,8 +238,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return id;
   };
 
-  const updateOrderStatus = (id: string, status: Order['status']) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, status } : o));
+  const updateOrderStatus = (id: string, status: Order['status'], deliveryManName?: string, deliveryManPhone?: string) => {
+    setOrders(orders.map(o => o.id === id ? { 
+      ...o, 
+      status, 
+      ...(deliveryManName && { deliveryManName }),
+      ...(deliveryManPhone && { deliveryManPhone }) 
+    } : o));
   };
 
   const addOffer = (offerData: Omit<Offer, 'id'>) => {
@@ -263,6 +283,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setLocations(locations.filter(l => l.id !== id));
   };
 
+  const addDeliveryPartner = (partnerData: Omit<DeliveryPartner, 'id'>) => {
+    const newPartner = { ...partnerData, id: Date.now().toString() };
+    setDeliveryPartners([...deliveryPartners, newPartner]);
+  };
+
+  const updateDeliveryPartner = (partner: DeliveryPartner) => {
+    setDeliveryPartners(deliveryPartners.map(p => p.id === partner.id ? partner : p));
+  };
+
+  const toggleDeliveryPartnerActive = (id: string) => {
+    setDeliveryPartners(deliveryPartners.map(p => p.id === id ? { ...p, active: !p.active } : p));
+  };
+
+  const deleteDeliveryPartner = (id: string) => {
+    setDeliveryPartners(deliveryPartners.filter(p => p.id !== id));
+  };
+
   return (
     <StoreContext.Provider value={{
       foods, categories, orders, reviews, offers, cart,
@@ -272,6 +309,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       placeOrder, updateOrderStatus,
       addOffer, toggleOfferActive, deleteOffer,
       locations, addLocation, updateLocation, toggleLocationActive, deleteLocation,
+      deliveryPartners, addDeliveryPartner, updateDeliveryPartner, toggleDeliveryPartnerActive, deleteDeliveryPartner,
       isAdminLoggedIn, setAdminLoggedIn,
       isStoreOpen, storeReopenDate, storeCloseReason, storeCloseType, setStoreStatus
     }}>

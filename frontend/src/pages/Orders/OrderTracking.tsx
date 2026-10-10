@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { CheckCircle, Clock, ChefHat, Bike, Home, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Clock, ChefHat, Bike, Home, ArrowLeft, PhoneCall, User } from 'lucide-react';
 
 const statuses = ['Placed', 'Confirmed', 'Preparing', 'Ready', 'Out for Delivery', 'Delivered'];
 
@@ -115,7 +115,28 @@ const OrderTracking: React.FC = () => {
             </div>
           )}
 
-          <div className="mt-12 bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          {/* Delivery Partner Details */}
+          {order.deliveryManName && (
+            <div className="mt-8 bg-green-50 rounded-2xl p-6 border border-green-100 flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-green-200">
+                  <User className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-green-800 font-medium mb-0.5">Delivery Partner</p>
+                  <p className="font-bold text-gray-900 text-lg">{order.deliveryManName}</p>
+                </div>
+              </div>
+              {order.deliveryManPhone && (
+                <a href={`tel:${order.deliveryManPhone}`} className="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl border border-green-200 text-green-700 font-bold shadow-sm hover:bg-green-100 transition-colors">
+                  <PhoneCall className="w-4 h-4" />
+                  <span className="hidden sm:inline">Call Partner</span>
+                </a>
+              )}
+            </div>
+          )}
+
+          <div className="mt-8 bg-gray-50 rounded-2xl p-6 border border-gray-100">
             <h3 className="font-bold text-gray-900 mb-6 text-lg border-b border-gray-200 pb-4">Order Details</h3>
             <div className="space-y-4">
               {order.items.map((item, idx) => (

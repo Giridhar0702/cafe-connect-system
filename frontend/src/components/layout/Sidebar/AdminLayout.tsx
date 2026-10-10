@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Pizza, ShoppingBag, Users, MessageSquare, LogOut, MapPin, Menu, X, Bell, Package } from 'lucide-react';
+import { LayoutDashboard, Pizza, ShoppingBag, Users, MessageSquare, LogOut, MapPin, Menu, X, Bell, Package, Bike } from 'lucide-react';
 import { useStore } from '../../../store/StoreContext';
 
 const playNotificationSound = () => {
@@ -65,6 +65,7 @@ const AdminLayout: React.FC = () => {
     { name: 'Orders', path: '/admin/orders', icon: <ShoppingBag className="w-5 h-5" /> },
     { name: 'Customers', path: '/admin/customers', icon: <Users className="w-5 h-5" /> },
     { name: 'Locations', path: '/admin/locations', icon: <MapPin className="w-5 h-5" /> },
+    { name: 'Delivery Partners', path: '/admin/delivery', icon: <Bike className="w-5 h-5" /> },
     { name: 'Reviews', path: '/admin/reviews', icon: <MessageSquare className="w-5 h-5" /> },
   ];
 

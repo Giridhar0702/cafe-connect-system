@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/StoreContext';
-import { ChevronDown, ChevronUp, Receipt, Bluetooth } from 'lucide-react';
+import { ChevronDown, ChevronUp, Receipt, Bluetooth, Eye, X } from 'lucide-react';
 import type { Order } from '../../types';
 import { bluetoothPrinter, formatLine, formatCenter } from '../../utils/printer';
 
 const OrdersManagement: React.FC = () => {
-  const { orders, updateOrderStatus } = useStore();
+  const { orders, updateOrderStatus, deliveryPartners } = useStore();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [isPrinterConnected, setIsPrinterConnected] = useState(false);
+  const [viewingBillOrder, setViewingBillOrder] = useState<Order | null>(null);
 
   const statuses = ['Placed', 'Confirmed', 'Preparing', 'Ready', 'Out for Delivery', 'Delivered', 'Cancelled'] as const;
 
@@ -164,6 +165,14 @@ const OrdersManagement: React.FC = () => {
                     <td className="p-4">
                       <div className="flex space-x-2">
                         <button 
+                          onClick={(e) => { e.stopPropagation(); setViewingBillOrder(order); }}
+                          className="flex items-center space-x-1 px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                          title="View Digital Bill"
+                        >
+                          <Eye size={16} />
+                          <span>View</span>
+                        </button>
+                        <button 
                           onClick={(e) => { e.stopPropagation(); handlePrint(order); }}
                           className="flex items-center space-x-1 px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
                           title="Print Bill & KOT"
@@ -255,6 +264,31 @@ const OrdersManagement: React.FC = () => {
                                   </span>
                                 </div>
                               </div>
+                              
+                              <h5 className="text-sm font-medium text-gray-500 mb-2 mt-6 uppercase tracking-wider">Delivery Partner</h5>
+                              <div className="bg-white rounded-xl border border-gray-200 p-4">
+                                <label className="block text-xs text-gray-500 mb-2">Assign Partner</label>
+                                <select 
+                                  value={order.deliveryManPhone || ''} 
+                                  onChange={(e) => {
+                                    const selectedPartner = deliveryPartners.find(p => p.phone === e.target.value);
+                                    if (selectedPartner) {
+                                      updateOrderStatus(order.id, order.status, selectedPartner.name, selectedPartner.phone);
+                                    } else {
+                                      updateOrderStatus(order.id, order.status, '', '');
+                                    }
+                                  }}
+                                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary-500 outline-none transition"
+                                >
+                                  <option value="">-- Unassigned --</option>
+                                  {deliveryPartners.filter(p => p.active).map(p => (
+                                    <option key={p.id} value={p.phone}>{p.name} ({p.phone})</option>
+                                  ))}
+                                  {order.deliveryManName && !deliveryPartners.find(p => p.phone === order.deliveryManPhone) && (
+                                    <option value={order.deliveryManPhone || ''}>{order.deliveryManName} ({order.deliveryManPhone})</option>
+                                  )}
+                                </select>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -274,6 +308,118 @@ const OrdersManagement: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* View Bill Modal */}
+      {viewingBillOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-800 flex items-center">
+                <Receipt className="w-5 h-5 mr-2 text-gray-600" /> Digital Bill
+              </h3>
+              <button 
+                onClick={() => setViewingBillOrder(null)}
+                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto bg-white" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+              <div className="text-center mb-6">
+                <h2 className="font-bold text-xl mb-1">Elai Virundhu & Cafe</h2>
+                <p className="text-sm">Order: #{viewingBillOrder.id.slice(0, 8)}</p>
+                <p className="text-sm">Customer: {viewingBillOrder.customerName}</p>
+                <p className="text-sm">Phone: {viewingBillOrder.phone}</p>
+                <p className="text-sm">Date: {new Date(viewingBillOrder.date).toLocaleString()}</p>
+              </div>
+
+              <div className="border-t border-b border-dashed border-gray-400 py-3 mb-4">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="text-left font-semibold pb-2">Item</th>
+                      <th className="text-right font-semibold pb-2">Qty</th>
+                      <th className="text-right font-semibold pb-2">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {viewingBillOrder.items.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="py-1">{item.name}</td>
+                        <td className="text-right py-1">{item.quantity}</td>
+                        <td className="text-right py-1">₹{(item.price * item.quantity).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {(() => {
+                const subtotal = viewingBillOrder.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                const cgst = subtotal * 0.025;
+                const sgst = subtotal * 0.025;
+                let exactTotal = subtotal + cgst + sgst;
+                let deliveryFee = 0;
+                if (viewingBillOrder.total > Math.ceil(exactTotal) + 10) {
+                  deliveryFee = 30;
+                  exactTotal += 30;
+                }
+                const roundedTotal = Math.ceil(exactTotal);
+                
+                return (
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>Subtotal:</span>
+                      <span>₹{subtotal.toFixed(2)}</span>
+                    </div>
+                    {deliveryFee > 0 && (
+                      <div className="flex justify-between">
+                        <span>Delivery Fee:</span>
+                        <span>₹{deliveryFee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span>CGST (2.5%):</span>
+                      <span>₹{cgst.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>SGST (2.5%):</span>
+                      <span>₹{sgst.toFixed(2)}</span>
+                    </div>
+                    {roundedTotal !== exactTotal && (
+                      <div className="flex justify-between text-gray-500">
+                        <span>Rounding:</span>
+                        <span>+₹{(roundedTotal - exactTotal).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-lg pt-3 mt-3 border-t border-dashed border-gray-400">
+                      <span>TOTAL:</span>
+                      <span>₹{roundedTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              <div className="text-center mt-8 text-sm">
+                <p>Thank you for dining with us!</p>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button 
+                onClick={() => {
+                  handlePrint(viewingBillOrder);
+                  setViewingBillOrder(null);
+                }}
+                className="px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl shadow-sm hover:bg-primary-700 transition flex items-center"
+              >
+                <Receipt className="w-4 h-4 mr-2" /> Print This Bill
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -35,6 +35,8 @@ export interface Order {
   status: OrderStatus;
   date: string;
   paymentMethod: 'UPI' | 'Card' | 'COD';
+  deliveryManName?: string;
+  deliveryManPhone?: string;
 }
 
 export interface UserProfile {
@@ -43,6 +45,13 @@ export interface UserProfile {
   phone: string;
   address: string;
   isAdmin: boolean;
+}
+
+export interface DeliveryPartner {
+  id: string;
+  name: string;
+  phone: string;
+  active: boolean;
 }
 
 export interface Review {

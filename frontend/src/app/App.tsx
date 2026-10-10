@@ -25,6 +25,7 @@ import StoreClosed from '../components/layout/StoreClosed';
 import { useStore } from '../store/StoreContext';
 
 import StockManagement from '../pages/Admin/StockManagement';
+import DeliveryPartnersManagement from '../pages/Admin/DeliveryPartnersManagement';
 
 const CustomerLayout: React.FC = () => {
   const { isStoreOpen, storeReopenDate, storeCloseReason, storeCloseType } = useStore();
@@ -82,6 +83,7 @@ function App() {
             <Route path="orders" element={<OrdersManagement />} />
             <Route path="customers" element={<CustomersManagement />} />
             <Route path="locations" element={<LocationsManagement />} />
+            <Route path="delivery" element={<DeliveryPartnersManagement />} />
             {/* Additional admin routes could go here */}
           </Route>
         </Routes>

@@ -9,6 +9,15 @@
 }
 
 @layer base {
+  html {
+    font-size: 14px;
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 16px;
+    }
+  }
+  
   body {
     @apply bg-gray-50 text-gray-900 antialiased font-sans pb-16 md:pb-0;
   }

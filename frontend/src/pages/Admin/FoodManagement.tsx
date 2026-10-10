@@ -59,7 +59,7 @@ const FoodManagement: React.FC = () => {
                 </td>
                 <td className="p-4">
                   <div className="flex space-x-3">
-                    <Link to={`/admin/foods/edit/${food.id}`} className="text-blue-600 hover:text-blue-800 transition" title="Edit">
+                    <Link to={`/admin/foods/${food.id}/edit`} className="text-blue-600 hover:text-blue-800 transition" title="Edit">
                       <Edit2 className="w-5 h-5" />
                     </Link>
                     <button onClick={() => handleDelete(food.id)} className="text-red-600 hover:text-red-800 transition" title="Delete">

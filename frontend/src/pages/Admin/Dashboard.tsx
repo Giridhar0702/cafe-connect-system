@@ -3,10 +3,11 @@ import { useStore } from '../../store/StoreContext';
 import { ShoppingBag, DollarSign, Clock, Users, AlertTriangle, X } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
-  const { orders, isStoreOpen, storeReopenDate, setStoreStatus } = useStore();
+  const { orders, isStoreOpen, storeReopenDate, storeCloseReason, setStoreStatus } = useStore();
   
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [tempDate, setTempDate] = useState(storeReopenDate);
+  const [tempReason, setTempReason] = useState('Kitchen Rush');
 
   const todayOrders = orders.filter(o => {
     const today = new Date().toISOString().split('T')[0];
@@ -32,13 +33,13 @@ const Dashboard: React.FC = () => {
           <p className="text-gray-500 text-sm mt-1">
             {isStoreOpen 
               ? 'The store is currently open and accepting orders.' 
-              : `The store is closed. Reopening on: ${new Date(storeReopenDate).toLocaleString()}`}
+              : `The store is closed due to: ${storeCloseReason || 'Other'}. Reopening on: ${new Date(storeReopenDate).toLocaleString()}`}
           </p>
         </div>
         
         <div className="flex items-center space-x-3">
           <span className={`text-sm font-bold ${!isStoreOpen ? 'text-gray-400' : 'text-green-600'}`}>
-            {isStoreOpen ? 'ONLINE' : 'OFFLINE'}
+            {isStoreOpen ? 'OPEN' : 'CLOSED'}
           </span>
           <button
             onClick={() => {
@@ -71,7 +72,7 @@ const Dashboard: React.FC = () => {
             <div className="bg-red-50 p-6 flex justify-between items-start border-b border-red-100">
               <div className="flex items-center text-red-700">
                 <AlertTriangle className="w-6 h-6 mr-3" />
-                <h3 className="text-xl font-bold">Turn Off Store</h3>
+                <h3 className="text-xl font-bold">CLOSE THE SHOP</h3>
               </div>
               <button onClick={() => setShowCloseModal(false)} className="text-red-400 hover:text-red-600">
                 <X className="w-6 h-6" />
@@ -84,6 +85,20 @@ const Dashboard: React.FC = () => {
               </p>
               
               <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Reason for closing
+                </label>
+                <select
+                  value={tempReason}
+                  onChange={(e) => setTempReason(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition mb-4"
+                >
+                  <option value="Kitchen Rush">Kitchen Rush</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Cannot Deliverable">Cannot Deliverable</option>
+                  <option value="Any Other">Any Other</option>
+                </select>
+                
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   When will the store reopen?
                 </label>
@@ -110,7 +125,7 @@ const Dashboard: React.FC = () => {
                     alert("Please select a reopen date and time.");
                     return;
                   }
-                  setStoreStatus(false, tempDate);
+                  setStoreStatus(false, tempDate, tempReason);
                   setShowCloseModal(false);
                 }}
                 className="px-6 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition"

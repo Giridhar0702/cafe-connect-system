@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../../store/StoreContext';
-import { Search, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Search, Plus, Minus, ShoppingCart, SlidersHorizontal, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const VegIcon = () => (
@@ -15,8 +15,24 @@ const NonVegIcon = () => (
   </div>
 );
 
-const isNonVeg = (name: string, description: string) => {
-  return /non veg|mutton|chicken|fish|prawn|egg|beef|nattukozhi|kochai|meat/i.test(name + ' ' + description);
+const EggIcon = () => (
+  <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-yellow-500 rounded-[3px] bg-white mt-1 shrink-0" title="Egg">
+    <div className="w-[8px] h-[8px] bg-yellow-500 rounded-full"></div>
+  </div>
+);
+
+const getFoodType = (food: { name: string; description: string; foodType?: string }): 'VEG' | 'EGG' | 'NONVEG' => {
+  if (food.foodType === 'VEG' || food.foodType === 'EGG' || food.foodType === 'NONVEG') {
+    return food.foodType;
+  }
+  const text = (food.name + ' ' + food.description).toLowerCase();
+  if (/non veg|mutton|chicken|fish|prawn|beef|nattukozhi|kochai|meat/i.test(text)) {
+    return 'NONVEG';
+  }
+  if (/egg|omelette|muttai/i.test(text)) {
+    return 'EGG';
+  }
+  return 'VEG';
 };
 
 const Menu: React.FC = () => {
@@ -29,6 +45,11 @@ const Menu: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory || categories[0]);
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const navigate = useNavigate();
+
+  const [vegFilter, setVegFilter] = useState<'ALL' | 'VEG' | 'EGG' | 'NONVEG'>('ALL');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const observer = useRef<IntersectionObserver | null>(null);
@@ -78,6 +99,23 @@ const Menu: React.FC = () => {
     }
   }, [initialCategory]);
 
+  useEffect(() => {
+    const handleFocusSearch = () => {
+      setIsSearchOpen(true);
+      setTimeout(() => {
+        document.getElementById('menu-search-input')?.focus();
+      }, 100);
+    };
+    
+    window.addEventListener('focus-search' as any, handleFocusSearch);
+    if (initialSearch === 'open') {
+      handleFocusSearch();
+      setSearchQuery('');
+    }
+    
+    return () => window.removeEventListener('focus-search' as any, handleFocusSearch);
+  }, [initialSearch]);
+
   const getCartQuantity = (foodId: string) => {
     return cart.find(item => item.id === foodId)?.quantity || 0;
   };
@@ -102,15 +140,21 @@ const Menu: React.FC = () => {
   };
 
   const filteredFoods = foods.filter(food => {
-    return food.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-           food.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = food.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          food.description.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    
+    const foodType = getFoodType(food);
+    if (vegFilter !== 'ALL' && vegFilter !== foodType) return false;
+    
+    return true;
   });
 
   // Group filtered foods
   const groupedFoods = categoryCounts.map(cat => ({
     ...cat,
     items: filteredFoods.filter(f => f.category === cat.name)
-  })).filter(cat => cat.items.length > 0);
+  })).filter(cat => cat.items.length > 0 && (selectedCategories.length === 0 || selectedCategories.includes(cat.name)));
 
   return (
     <div className="min-h-screen bg-white">
@@ -118,35 +162,76 @@ const Menu: React.FC = () => {
       <div className="md:sticky md:top-[64px] z-30 bg-white border-b border-gray-100 px-4 py-4 md:px-8 md:shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h1 className="text-2xl font-bold text-gray-900 hidden md:block">Menu</h1>
-          <div className="relative w-full md:w-96">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+          
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {/* Filter Button (Mobile Only) */}
+            <button 
+              className={`md:hidden flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 bg-white shadow-sm rounded-xl font-bold text-gray-700 transition active:bg-gray-50 ml-auto ${isSearchOpen ? 'hidden' : 'flex'}`}
+              onClick={() => setIsFilterOpen(true)}
+            >
+              <SlidersHorizontal className="w-5 h-5" /> Filters
+            </button>
+
+            {/* Veg / NonVeg Toggle (Desktop) */}
+            <div className="hidden md:flex bg-gray-100 p-1 rounded-xl transition-all gap-1 w-fit">
+              <button 
+                onClick={() => setVegFilter('ALL')}
+                className={`flex items-center justify-center px-5 py-1.5 rounded-lg transition-all ${vegFilter === 'ALL' ? 'bg-white shadow-sm font-bold text-gray-900' : 'hover:bg-gray-200 font-medium text-gray-600'}`}
+              >
+                <span className="text-[14px]">All</span>
+              </button>
+              <button 
+                onClick={() => setVegFilter('VEG')}
+                className={`flex items-center justify-center px-4 py-1.5 rounded-lg transition-all ${vegFilter === 'VEG' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                title="Veg"
+              >
+                <VegIcon />
+              </button>
+              <button 
+                onClick={() => setVegFilter('EGG')}
+                className={`flex items-center justify-center px-4 py-1.5 rounded-lg transition-all ${vegFilter === 'EGG' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                title="Egg"
+              >
+                <EggIcon />
+              </button>
+              <button 
+                onClick={() => setVegFilter('NONVEG')}
+                className={`flex items-center justify-center px-4 py-1.5 rounded-lg transition-all ${vegFilter === 'NONVEG' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                title="Non-Veg"
+              >
+                <NonVegIcon />
+              </button>
             </div>
-            <input
-              type="text"
-              className="block w-full pl-11 pr-4 py-3 md:py-2 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base md:text-sm transition shadow-inner"
-              placeholder="Search for dishes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+
+            {/* Search Input */}
+            <div className={`relative w-full md:w-96 transition-all duration-300 ${!isSearchOpen ? 'hidden md:block' : 'block'}`}>
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              
+              <input
+                id="menu-search-input"
+                type="text"
+                className="block w-full h-[40px] pl-11 pr-4 py-2 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all shadow-inner"
+                placeholder="Search dishes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {isSearchOpen && (
+              <button 
+                className="md:hidden px-3 text-gray-500 font-medium shrink-0 hover:text-gray-900 transition" 
+                onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+              >
+                Cancel
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Horizontal Categories (Visible only on small screens) */}
-      <div className="md:hidden w-full overflow-x-auto hide-scrollbar sticky top-[64px] bg-white z-20 border-b border-gray-100 px-4 py-3.5 flex space-x-3 shadow-[0_4px_10px_-4px_rgba(0,0,0,0.05)]">
-        {groupedFoods.map(cat => (
-           <button
-           key={cat.name}
-           onClick={() => scrollToCategory(cat.name)}
-           className={`whitespace-nowrap px-5 py-2 rounded-xl text-[15px] font-bold transition shadow-sm ${
-             activeCategory === cat.name ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-           }`}
-         >
-           {cat.name}
-         </button>
-        ))}
-      </div>
+      {/* Mobile Horizontal Categories (Hidden, now in Filter Modal) */}
 
       <div className="max-w-7xl mx-auto flex items-start">
         {/* Sidebar */}
@@ -196,7 +281,8 @@ const Menu: React.FC = () => {
                         <div key={food.id}>
                           <div className="flex justify-between items-start cursor-pointer group" onClick={() => navigate(`/food/${food.id}`)}>
                             <div className="flex gap-3 flex-1">
-                              {isNonVeg(food.name, food.description) ? <NonVegIcon /> : <VegIcon />}
+                              {getFoodType(food) === 'NONVEG' ? <NonVegIcon /> : 
+                               getFoodType(food) === 'EGG' ? <EggIcon /> : <VegIcon />}
                               <div>
                                 <h3 className="text-lg font-medium text-gray-800 group-hover:text-primary-600 transition-colors">{food.name}</h3>
                                 <div className="text-[15px] font-medium text-gray-700 mt-1">₹{food.price}</div>
@@ -241,7 +327,76 @@ const Menu: React.FC = () => {
           )}
         </div>
       </div>
-      
+
+      {/* Mobile Filter Modal */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200" onClick={() => setIsFilterOpen(false)}>
+          <div className="bg-white rounded-t-3xl p-6 pb-safe animate-in slide-in-from-bottom duration-300" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-gray-900">Filters</h3>
+              <button onClick={() => setIsFilterOpen(false)} className="p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition">
+                 <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <h4 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wider">Dietary Preference</h4>
+            <div className="flex bg-gray-100 p-1.5 rounded-2xl transition-all gap-1 w-full mb-8">
+              <button 
+                onClick={() => setVegFilter('ALL')}
+                className={`flex-1 flex items-center justify-center py-2.5 rounded-xl transition-all ${vegFilter === 'ALL' ? 'bg-white shadow-sm font-bold text-gray-900' : 'hover:bg-gray-200 font-medium text-gray-600'}`}
+              >
+                <span className="text-[14px]">All</span>
+              </button>
+              <button 
+                onClick={() => setVegFilter('VEG')}
+                className={`flex-1 flex items-center justify-center py-2.5 rounded-xl transition-all ${vegFilter === 'VEG' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                title="Veg"
+              >
+                <VegIcon /> <span className={`ml-2 text-[14px] ${vegFilter === 'VEG' ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>Veg</span>
+              </button>
+              <button 
+                onClick={() => setVegFilter('EGG')}
+                className={`flex-1 flex items-center justify-center py-2.5 rounded-xl transition-all ${vegFilter === 'EGG' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                title="Egg"
+              >
+                <EggIcon /> <span className={`ml-2 text-[14px] ${vegFilter === 'EGG' ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>Egg</span>
+              </button>
+              <button 
+                onClick={() => setVegFilter('NONVEG')}
+                className={`flex-1 flex items-center justify-center py-2.5 rounded-xl transition-all ${vegFilter === 'NONVEG' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                title="Non-Veg"
+              >
+                <NonVegIcon /> <span className={`ml-2 text-[14px] ${vegFilter === 'NONVEG' ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>Non-Veg</span>
+              </button>
+            </div>
+
+            <h4 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wider">Categories</h4>
+            <div className="flex flex-wrap gap-2.5 mb-8 max-h-[40vh] overflow-y-auto hide-scrollbar pb-4">
+              {categoryCounts.map(cat => (
+                <button
+                  key={cat.name}
+                  onClick={() => {
+                    setSelectedCategories(prev => 
+                      prev.includes(cat.name) 
+                        ? prev.filter(c => c !== cat.name)
+                        : [...prev, cat.name]
+                    );
+                  }}
+                  className={`px-5 py-2.5 rounded-xl text-[14px] font-bold transition shadow-sm ${
+                    selectedCategories.includes(cat.name) ? 'bg-primary-600 text-white border-transparent' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+
+            <button onClick={() => setIsFilterOpen(false)} className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-lg shadow-gray-900/20 active:scale-[0.98] transition-all">
+              Show Menu
+            </button>
+          </div>
+        </div>
+      )}
       {/* Global CSS for scrollbar hiding */}
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {

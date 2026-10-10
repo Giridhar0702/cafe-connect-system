@@ -16,7 +16,8 @@ interface StoreContextType {
   
   isStoreOpen: boolean;
   storeReopenDate: string;
-  setStoreStatus: (isOpen: boolean, reopenDate?: string) => void;
+  storeCloseReason: string;
+  setStoreStatus: (isOpen: boolean, reopenDate?: string, closeReason?: string) => void;
   
   // Actions
   addFood: (food: FoodItem) => void;
@@ -109,11 +110,17 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return localStorage.getItem('storeReopenDate') || '';
   });
 
-  const setStoreStatus = (isOpen: boolean, reopenDate: string = '') => {
+  const [storeCloseReason, setStoreCloseReason] = useState<string>(() => {
+    return localStorage.getItem('storeCloseReason') || '';
+  });
+
+  const setStoreStatus = (isOpen: boolean, reopenDate: string = '', closeReason: string = '') => {
     setIsStoreOpen(isOpen);
     setStoreReopenDate(reopenDate);
+    setStoreCloseReason(closeReason);
     localStorage.setItem('isStoreOpen', String(isOpen));
     localStorage.setItem('storeReopenDate', reopenDate);
+    localStorage.setItem('storeCloseReason', closeReason);
   };
 
   // Save to localStorage on change
@@ -258,7 +265,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addOffer, toggleOfferActive, deleteOffer,
       locations, addLocation, updateLocation, toggleLocationActive, deleteLocation,
       isAdminLoggedIn, setAdminLoggedIn,
-      isStoreOpen, storeReopenDate, setStoreStatus
+      isStoreOpen, storeReopenDate, storeCloseReason, setStoreStatus
     }}>
       {children}
     </StoreContext.Provider>

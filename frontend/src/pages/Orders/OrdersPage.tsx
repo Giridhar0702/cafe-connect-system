@@ -12,7 +12,6 @@ const Orders: React.FC = () => {
     if (filter === 'All') return true;
     if (filter === 'Active') return !['Delivered', 'Cancelled'].includes(order.status);
     if (filter === 'Completed') return order.status === 'Delivered';
-    if (filter === 'Cancelled') return order.status === 'Cancelled';
     return true;
   });
 
@@ -23,7 +22,7 @@ const Orders: React.FC = () => {
         
         {/* Filters */}
         <div className="flex overflow-x-auto pb-4 mb-6 hide-scrollbar space-x-3">
-          {['All', 'Active', 'Completed', 'Cancelled'].map(f => (
+          {['All', 'Active', 'Completed'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -56,6 +55,7 @@ const Orders: React.FC = () => {
                     <div>
                       <div className="flex items-center space-x-2 mb-1">
                         <h3 className="text-lg font-extrabold text-gray-900">Elai Virundhu & Cafe</h3>
+                        <span className="text-sm text-gray-400 font-medium">#{order.id}</span>
                       </div>
                       <p className="text-xs sm:text-sm text-gray-500 font-medium">Sathyamangalam • {new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                     </div>

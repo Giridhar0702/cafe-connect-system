@@ -13,6 +13,7 @@ export interface FoodItem {
   prepTime: number;
   available: boolean;
   featured: boolean;
+  foodType?: 'VEG' | 'NONVEG' | 'EGG';
   stock?: number;
   dailyLimits?: Partial<Record<DayOfWeek, number>>;
   lastStockReset?: string;

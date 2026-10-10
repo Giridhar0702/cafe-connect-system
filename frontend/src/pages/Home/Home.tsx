@@ -182,7 +182,7 @@ const Home: React.FC = () => {
       </section>
 
         {/* Categories Section - Swiggy Style Isolated Images */}
-        <section className="py-12 bg-white border-b border-gray-100">
+        <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Order our best food options</h2>
@@ -223,7 +223,7 @@ const Home: React.FC = () => {
       </section>
 
         {/* Featured / Popular Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-10 tracking-tight">Popular right now</h2>
           
@@ -234,50 +234,61 @@ const Home: React.FC = () => {
                 <div 
                   key={food.id} 
                   onClick={() => navigate(`/food/${food.id}`)}
-                  className="min-w-[280px] w-full md:min-w-0 snap-center bg-white rounded-[1.5rem] p-3 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300 border border-gray-100 flex flex-col group cursor-pointer overflow-hidden"
+                  className="min-w-[300px] w-full md:min-w-0 snap-center bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:shadow-xl transition-all duration-300 flex flex-col group cursor-pointer overflow-hidden pb-4"
                 >
-                  <div className="relative h-52 rounded-[1.2rem] overflow-hidden mb-4 shadow-inner">
+                  <div className="relative h-48 w-full overflow-hidden shrink-0">
                     <div className="absolute inset-0 bg-gray-100 animate-pulse"></div>
                     <img 
                       src={food.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'} 
                       alt={food.name} 
-                      className="w-full h-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-700 ease-in-out" 
+                      className="w-full h-full object-cover relative z-10 group-hover:scale-105 transition-transform duration-700 ease-in-out" 
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
                         (e.target as HTMLImageElement).onerror = null;
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    {/* Bottom Gradient overlay */}
+                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10"></div>
+                    
                     {!food.available && (
-                      <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-20">
-                        <span className="text-gray-900 font-extrabold px-5 py-2 bg-white rounded-full text-sm shadow-xl tracking-wide uppercase">Sold Out</span>
+                      <div className="absolute inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-20">
+                        <span className="text-gray-900 font-extrabold px-4 py-1.5 bg-white rounded-full text-xs shadow-xl uppercase">Sold Out</span>
                       </div>
                     )}
-                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-lg z-20 border border-white/20">
-                      <Star className="w-3.5 h-3.5 text-orange-500 mr-1.5 fill-current" />
-                      {food.rating}
+                    
+                    {/* Title and Rating on Image Bottom */}
+                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end z-20">
+                      <h3 className="text-xl font-bold text-white line-clamp-1 mr-2 tracking-wide leading-tight drop-shadow-md">{food.name}</h3>
+                      <div className="bg-[#24963F] text-white px-1.5 py-0.5 rounded flex items-center shadow-md shrink-0">
+                        <Star className="w-3 h-3 mr-0.5 fill-white text-white" />
+                        <span className="text-[11px] font-bold">{food.rating}</span>
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="px-2 flex flex-col flex-grow">
-                    <div className="flex justify-between items-start mb-1.5">
-                      <h3 className="text-[1.1rem] font-bold text-gray-800 line-clamp-1 group-hover:text-primary-600 transition-colors leading-tight">{food.name}</h3>
-                      <div className="mt-1 shrink-0">{isNonVeg(food.name, food.description) ? <NonVegIcon /> : <VegIcon />}</div>
+                  <div className="px-4 pt-3 flex flex-col flex-grow">
+                    {/* Details Row 1 */}
+                    <div className="flex justify-between items-center text-gray-500 text-[13px] mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate max-w-[120px]">{food.category} • Food</span>
+                      </div>
+                      <span className="shrink-0 font-medium text-gray-600">₹{food.price}</span>
                     </div>
                     
-                    <p className="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">{food.description}</p>
-                    
-                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100/80">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-0.5">Price</span>
-                        <div className="font-extrabold text-gray-900 text-lg">₹{food.price}</div>
+                    {/* Details Row 2 */}
+                    <div className="flex justify-between items-center text-gray-500 text-[13px] mb-4">
+                      <div className="flex items-center gap-1.5 truncate">
+                         {(food.foodType === 'NONVEG' || /non veg|mutton|chicken|fish|prawn|beef|nattukozhi|kochai|meat/i.test(food.name + ' ' + food.description)) ? <span className="text-red-500 font-medium">Non-Veg</span> : (food.foodType === 'EGG' || /egg|omelette|muttai/i.test(food.name + ' ' + food.description)) ? <span className="text-yellow-600 font-medium">Egg</span> : <span className="text-green-600 font-medium">Veg</span>}
                       </div>
-                      
-                      <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
-                        {!food.available ? (
+                      <span className="shrink-0">{food.prepTime} mins</span>
+                    </div>
+                    
+                    {/* Add to Cart Area */}
+                    <div className="mt-auto flex justify-end items-center pt-2 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
+                       {!food.available ? (
                           <span className="text-sm font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-lg">Unavailable</span>
                         ) : qty > 0 ? (
-                          <div className="flex items-center justify-between w-[95px] h-[40px] bg-primary-50 border border-primary-200 rounded-xl overflow-hidden shadow-sm">
+                          <div className="flex items-center justify-between w-[90px] h-[36px] bg-primary-50 border border-primary-200 rounded-lg overflow-hidden shadow-sm">
                             <button onClick={(e) => handleDecrement(e, food.id)} className="w-1/3 h-full flex items-center justify-center text-primary-600 hover:bg-primary-100 transition-colors active:bg-primary-200">
                               <Minus className="w-3.5 h-3.5" strokeWidth={3} />
                             </button>
@@ -289,12 +300,11 @@ const Home: React.FC = () => {
                         ) : (
                           <button 
                             onClick={(e) => handleIncrement(e, food)}
-                            className="w-[95px] h-[40px] flex items-center justify-center text-[13px] font-bold text-primary-600 bg-white border-2 border-primary-100 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-all shadow-sm active:scale-95"
+                            className="w-[90px] h-[34px] flex items-center justify-center text-[13px] font-bold text-primary-600 bg-white border border-primary-200 rounded-lg hover:bg-primary-50 transition-all shadow-sm active:scale-95 uppercase tracking-wide"
                           >
-                            ADD <ShoppingCart className="w-4 h-4 ml-1.5 opacity-80" strokeWidth={2.5} />
+                            Add <Plus className="w-3.5 h-3.5 ml-0.5 opacity-80" strokeWidth={3} />
                           </button>
                         )}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -305,11 +315,11 @@ const Home: React.FC = () => {
       </section>
 
         {/* Footer */}
-        <footer className="bg-gray-900 pt-16 pb-8 mt-auto rounded-b-[2.5rem] md:rounded-none">
+        <footer className="bg-gray-900 pt-16 pb-8 mt-auto rounded-t-[2.5rem] md:rounded-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-12">
             <div className="col-span-1 lg:col-span-2">
-              <h3 className="text-3xl font-extrabold text-white mb-6 italic tracking-tight">Elai Virundhu & Cafe</h3>
+              <img src="/logo.png" alt="Elai Virundhu & Cafe" className="h-16 w-auto object-contain mb-6 bg-white/10 p-2 rounded-2xl" />
               <p className="text-gray-400 max-w-sm mb-8 leading-relaxed">
                 Serving the best authentic food in town. Order online and experience the taste of perfection right at your doorstep.
               </p>

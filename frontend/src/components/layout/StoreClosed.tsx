@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface StoreClosedProps {
   reopenDate: string;
+  closeReason?: string;
 }
 
 const DragonGame = () => {
@@ -168,7 +169,7 @@ const DragonGame = () => {
   );
 };
 
-const StoreClosed: React.FC<StoreClosedProps> = ({ reopenDate }) => {
+const StoreClosed: React.FC<StoreClosedProps> = ({ reopenDate, closeReason }) => {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -233,10 +234,20 @@ const StoreClosed: React.FC<StoreClosedProps> = ({ reopenDate }) => {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight mb-2 italic drop-shadow-lg leading-tight">
           Elai Virundhu & Cafe
         </h1>
-        <p className="text-lg sm:text-xl md:text-2xl text-primary-100 mb-6 sm:mb-8 font-medium drop-shadow-md">
+        <p className="text-lg sm:text-xl md:text-2xl text-primary-100 mb-2 font-medium drop-shadow-md">
           We are temporarily closed.
         </p>
+        {closeReason && (
+          <p className="text-md sm:text-lg text-primary-200 mb-6 sm:mb-8 drop-shadow-md">
+            Due to: {closeReason}
+          </p>
+        )}
         
+        {hasTimer && (
+          <p className="text-lg font-bold text-white mb-2 uppercase tracking-widest drop-shadow-md">
+            Opens In
+          </p>
+        )}
         {hasTimer ? (
           <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-4 bg-black/40 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-white/10 shadow-2xl max-w-[95%] mb-8 sm:mb-12">
             <div className="flex flex-col items-center min-w-[60px] sm:min-w-[80px]">
@@ -264,6 +275,10 @@ const StoreClosed: React.FC<StoreClosedProps> = ({ reopenDate }) => {
             Opening soon!
           </div>
         )}
+
+        <div className="text-white/80 text-sm md:text-base font-medium mb-8 bg-black/40 px-6 py-2 rounded-full border border-white/10 shadow-lg">
+          For any queries, please contact us at <a href="tel:+919876543210" className="text-white font-bold hover:underline ml-1">+91 98765 43210</a>
+        </div>
 
         <div className="w-full max-w-lg mx-auto bg-white/10 backdrop-blur-md p-4 sm:p-6 rounded-3xl border border-white/20 shadow-2xl">
           <DragonGame />

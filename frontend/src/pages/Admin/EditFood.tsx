@@ -15,6 +15,7 @@ const foodSchema = z.object({
   available: z.boolean(),
   featured: z.boolean(),
   stockLimit: z.string().optional(),
+  foodType: z.enum(['VEG', 'NONVEG', 'EGG']).optional(),
 });
 
 type FoodFormValues = z.infer<typeof foodSchema>;
@@ -41,6 +42,7 @@ const EditFood: React.FC = () => {
         imageUrl: food.imageUrl,
         available: food.available,
         featured: food.featured,
+        foodType: food.foodType,
         stockLimit: food.stock != null ? food.stock.toString() : '',
       });
     }
@@ -85,6 +87,16 @@ const EditFood: React.FC = () => {
                 ))}
               </select>
               {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Food Type</label>
+              <select {...register('foodType')} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500">
+                <option value="">Auto-detect</option>
+                <option value="VEG">Vegetarian</option>
+                <option value="NONVEG">Non-Vegetarian</option>
+                <option value="EGG">Egg</option>
+              </select>
             </div>
             
             <div>

@@ -128,7 +128,10 @@ const OrdersManagement: React.FC = () => {
             <tbody>
               {orders.map(order => (
                 <React.Fragment key={order.id}>
-                  <tr className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${expandedOrderId === order.id ? 'bg-gray-50' : ''}`}>
+                  <tr 
+                    onClick={() => toggleExpand(order.id)}
+                    className={`border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${expandedOrderId === order.id ? 'bg-gray-50' : ''}`}
+                  >
                     <td className="p-4">
                       <button 
                         onClick={() => toggleExpand(order.id)}
@@ -149,6 +152,7 @@ const OrdersManagement: React.FC = () => {
                     <td className="p-4">
                       <select 
                         value={order.status} 
+                        onClick={(e) => e.stopPropagation()}
                         onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
                         className="border border-gray-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                       >
@@ -160,7 +164,7 @@ const OrdersManagement: React.FC = () => {
                     <td className="p-4">
                       <div className="flex space-x-2">
                         <button 
-                          onClick={() => handlePrint(order)}
+                          onClick={(e) => { e.stopPropagation(); handlePrint(order); }}
                           className="flex items-center space-x-1 px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
                           title="Print Bill & KOT"
                         >

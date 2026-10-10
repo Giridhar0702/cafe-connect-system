@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
 import { StoreProvider } from '../store/StoreContext';
 import Navbar from '../components/layout/Navbar/Navbar';
 import Home from '../pages/Home/Home';
@@ -22,15 +23,14 @@ import CustomersManagement from '../pages/Admin/CustomersManagement';
 import AdminLogin from '../pages/Admin/AdminLogin';
 import StoreClosed from '../components/layout/StoreClosed';
 import { useStore } from '../store/StoreContext';
-import { Outlet } from 'react-router-dom';
 
 import StockManagement from '../pages/Admin/StockManagement';
 
 const CustomerLayout: React.FC = () => {
-  const { isStoreOpen, storeReopenDate } = useStore();
+  const { isStoreOpen, storeReopenDate, storeCloseReason } = useStore();
   
   if (!isStoreOpen) {
-    return <StoreClosed reopenDate={storeReopenDate} />;
+    return <StoreClosed reopenDate={storeReopenDate} closeReason={storeCloseReason} />;
   }
   
   return (
@@ -41,10 +41,21 @@ const CustomerLayout: React.FC = () => {
   );
 };
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 function App() {
   return (
     <StoreProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           {/* Customer Routes */}
           <Route path="/" element={<CustomerLayout />}>

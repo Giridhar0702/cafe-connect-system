@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
             {/* Desktop logo (hidden mobile hamburger) */}
             <div className="hidden md:block mr-4" />
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold text-primary-600">Elai Virundhu & Cafe</span>
+              <img src="/logo.png" alt="Elai Virundhu & Cafe" className="h-12 w-auto object-contain" />
             </Link>
           </div>
 
@@ -77,11 +77,20 @@ const Navbar: React.FC = () => {
 
           {/* Mobile right icons */}
           <div className="flex items-center space-x-1 md:hidden">
-            {!isActive('/menu') && (
-              <Link to="/menu" className="text-gray-500 p-2 hover:text-primary-600 transition">
-                <Search className="w-6 h-6" />
-              </Link>
-            )}
+            <button 
+              onClick={(e) => {
+                if (location.pathname === '/menu') {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  window.dispatchEvent(new CustomEvent('focus-search'));
+                } else {
+                  window.location.href = '/menu?search=open';
+                }
+              }} 
+              className="text-gray-500 p-2 hover:text-primary-600 transition"
+            >
+              <Search className="w-6 h-6" />
+            </button>
             <Link to="/cart" className="relative text-gray-500 p-2 hover:text-primary-600 transition">
               <ShoppingCart className="w-6 h-6" />
               {cartCount > 0 && (

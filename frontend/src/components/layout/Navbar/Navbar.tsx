@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Search, Home, Utensils, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, User, Search, Home, Utensils, ShoppingBag, Info } from 'lucide-react';
 import { useStore } from '../../../store/StoreContext';
 
 const Navbar: React.FC = () => {
@@ -14,6 +14,7 @@ const Navbar: React.FC = () => {
     { name: 'Home', path: '/', icon: <Home className="w-5 h-5 mb-1" /> },
     { name: 'Menu', path: '/menu', icon: <Utensils className="w-5 h-5 mb-1" /> },
     { name: 'Orders', path: '/orders', icon: <ShoppingBag className="w-5 h-5 mb-1" /> },
+    { name: 'About', path: '/about', icon: <Info className="w-5 h-5 mb-1" /> },
     { name: 'Profile', path: '/profile', icon: <User className="w-5 h-5 mb-1" /> },
   ];
 
@@ -47,16 +48,6 @@ const Navbar: React.FC = () => {
                 {link.name}
               </Link>
             ))}
-            <Link
-              to="/about"
-              className={`${
-                isActive('/about')
-                  ? 'text-primary-600 border-b-2 border-primary-600'
-                  : 'text-gray-500 hover:text-gray-900 hover:border-b-2 hover:border-gray-300'
-              } px-1 py-2 text-sm font-medium transition-colors`}
-            >
-              About
-            </Link>
           </div>
 
           <div className="hidden md:flex items-center space-x-6">

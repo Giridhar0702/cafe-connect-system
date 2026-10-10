@@ -5,8 +5,19 @@ import type { Order } from '../../types';
 import { bluetoothPrinter, formatLine, formatCenter } from '../../utils/printer';
 
 const OrdersManagement: React.FC = () => {
-  const { orders, updateOrderStatus, deliveryPartners } = useStore();
+  const { orders, updateOrderStatus, deliveryPartners, adminSearchQuery } = useStore();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const filteredOrders = orders.filter(order => {
+    if (!adminSearchQuery) return true;
+    const q = adminSearchQuery.toLowerCase();
+    return (
+      order.id.toLowerCase().includes(q) ||
+      order.customerName.toLowerCase().includes(q) ||
+      order.phone.toLowerCase().includes(q) ||
+      order.items.some(item => item.name.toLowerCase().includes(q))
+    );
+  });
   const [isPrinterConnected, setIsPrinterConnected] = useState(false);
   const [viewingBillOrder, setViewingBillOrder] = useState<Order | null>(null);
 
@@ -127,7 +138,7 @@ const OrdersManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map(order => (
+              {filteredOrders.map(order => (
                 <React.Fragment key={order.id}>
                   <tr 
                     onClick={() => toggleExpand(order.id)}

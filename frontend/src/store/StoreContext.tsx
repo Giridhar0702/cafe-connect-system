@@ -51,11 +51,15 @@ interface StoreContextType {
   updateDeliveryPartner: (partner: DeliveryPartner) => void;
   toggleDeliveryPartnerActive: (id: string) => void;
   deleteDeliveryPartner: (id: string) => void;
+  adminSearchQuery: string;
+  setAdminSearchQuery: (query: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  
   const [foods, setFoods] = useState<FoodItem[]>(() => {
     const saved = localStorage.getItem('foods');
     const parsed = saved ? JSON.parse(saved) : null;
@@ -311,7 +315,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       locations, addLocation, updateLocation, toggleLocationActive, deleteLocation,
       deliveryPartners, addDeliveryPartner, updateDeliveryPartner, toggleDeliveryPartnerActive, deleteDeliveryPartner,
       isAdminLoggedIn, setAdminLoggedIn,
-      isStoreOpen, storeReopenDate, storeCloseReason, storeCloseType, setStoreStatus
+      isStoreOpen, storeReopenDate, storeCloseReason, storeCloseType, setStoreStatus,
+      adminSearchQuery, setAdminSearchQuery
     }}>
       {children}
     </StoreContext.Provider>

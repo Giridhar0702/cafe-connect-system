@@ -4,9 +4,15 @@ import { UserPlus, ToggleLeft, ToggleRight, Trash2, Edit2, Check, X, PhoneCall }
 import type { DeliveryPartner } from '../../types';
 
 const DeliveryPartnersManagement: React.FC = () => {
-  const { deliveryPartners, addDeliveryPartner, updateDeliveryPartner, toggleDeliveryPartnerActive, deleteDeliveryPartner } = useStore();
+  const { deliveryPartners, addDeliveryPartner, updateDeliveryPartner, toggleDeliveryPartnerActive, deleteDeliveryPartner, adminSearchQuery } = useStore();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const filteredPartners = deliveryPartners.filter(partner => {
+    if (!adminSearchQuery) return true;
+    const q = adminSearchQuery.toLowerCase();
+    return partner.name.toLowerCase().includes(q) || partner.phone.toLowerCase().includes(q);
+  });
 
   const [formData, setFormData] = useState({ name: '', phone: '' });
 
@@ -77,7 +83,7 @@ const DeliveryPartnersManagement: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {deliveryPartners.map(partner => (
+        {filteredPartners.map(partner => (
           <div key={partner.id} className={`bg-white rounded-2xl p-5 border ${partner.active ? 'border-gray-200' : 'border-gray-200 opacity-75'} shadow-sm relative`}>
             {editingId === partner.id ? (
               <form onSubmit={(e) => handleEditSubmit(e, partner.id)} className="space-y-4">

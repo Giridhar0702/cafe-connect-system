@@ -3,7 +3,7 @@ import { useStore } from '../../store/StoreContext';
 import { Users, Phone, MapPin, ShoppingBag } from 'lucide-react';
 
 const CustomersManagement: React.FC = () => {
-  const { orders } = useStore();
+  const { orders, adminSearchQuery } = useStore();
 
   const customers = useMemo(() => {
     const customerMap = new Map<string, { name: string; phone: string; address: string; totalSpent: number; orderCount: number; lastOrderDate: string }>();
@@ -28,8 +28,14 @@ const CustomersManagement: React.FC = () => {
       }
     });
 
-    return Array.from(customerMap.values()).sort((a, b) => b.totalSpent - a.totalSpent);
-  }, [orders]);
+    return Array.from(customerMap.values())
+      .filter(customer => {
+        if (!adminSearchQuery) return true;
+        const q = adminSearchQuery.toLowerCase();
+        return customer.name.toLowerCase().includes(q) || customer.phone.toLowerCase().includes(q);
+      })
+      .sort((a, b) => b.totalSpent - a.totalSpent);
+  }, [orders, adminSearchQuery]);
 
   return (
     <div className="space-y-6">

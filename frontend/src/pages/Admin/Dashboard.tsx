@@ -22,10 +22,10 @@ const Dashboard: React.FC = () => {
   const pendingOrders = orders.filter(o => ['Placed', 'Confirmed', 'Preparing'].includes(o.status)).length;
 
   const stats = [
-    { title: "Today's Orders", value: todayOrders.length, icon: <ShoppingBag className="w-8 h-8 text-blue-500" />, bg: "bg-blue-50" },
-    { title: "Today's Revenue", value: `₹${todayRevenue}`, icon: <DollarSign className="w-8 h-8 text-green-500" />, bg: "bg-green-50" },
-    { title: "Pending Orders", value: pendingOrders, icon: <Clock className="w-8 h-8 text-yellow-500" />, bg: "bg-yellow-50" },
-    { title: "Total Customers", value: "125", icon: <Users className="w-8 h-8 text-purple-500" />, bg: "bg-purple-50" },
+    { title: "Today's Orders", value: todayOrders.length, icon: <ShoppingBag className="w-8 h-8 text-white" />, iconBg: "bg-white/20", cardBg: "bg-[#CD424F]", textColor: "text-white", titleColor: "text-red-100", border: "border-transparent" },
+    { title: "Today's Revenue", value: `₹${todayRevenue}`, icon: <DollarSign className="w-8 h-8 text-white" />, iconBg: "bg-white/20", cardBg: "bg-[#EFAF3D]", textColor: "text-white", titleColor: "text-yellow-100", border: "border-transparent" },
+    { title: "Pending Orders", value: pendingOrders, icon: <Clock className="w-8 h-8 text-[#CD424F]" />, iconBg: "bg-red-50", cardBg: "bg-white", textColor: "text-gray-900", titleColor: "text-gray-500", border: "border-gray-100" },
+    { title: "Total Customers", value: "125", icon: <Users className="w-8 h-8 text-[#EFAF3D]" />, iconBg: "bg-yellow-50", cardBg: "bg-white", textColor: "text-gray-900", titleColor: "text-gray-500", border: "border-gray-100" },
   ];
 
   // Analytics Calculations
@@ -208,13 +208,13 @@ const Dashboard: React.FC = () => {
       <h2 className="text-xl font-bold text-gray-800 mt-8 mb-4">Dashboard Overview</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-            <div className={`p-4 rounded-xl ${stat.bg}`}>
+          <div key={idx} className={`${stat.cardBg} p-6 rounded-2xl shadow-sm border ${stat.border} flex items-center space-x-4 transition-transform hover:-translate-y-1`}>
+            <div className={`p-4 rounded-xl ${stat.iconBg}`}>
               {stat.icon}
             </div>
             <div>
-              <p className="text-sm text-gray-500 font-medium">{stat.title}</p>
-              <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
+              <p className={`text-sm font-medium ${stat.titleColor}`}>{stat.title}</p>
+              <h3 className={`text-2xl font-bold ${stat.textColor}`}>{stat.value}</h3>
             </div>
           </div>
         ))}

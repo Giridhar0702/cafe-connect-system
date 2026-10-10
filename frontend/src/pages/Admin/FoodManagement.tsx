@@ -4,8 +4,17 @@ import { Link } from 'react-router-dom';
 import { Edit2, Trash2 } from 'lucide-react';
 
 const FoodManagement: React.FC = () => {
-  const { foods, deleteFood, toggleFoodAvailability } = useStore();
+  const { foods, deleteFood, toggleFoodAvailability, adminSearchQuery } = useStore();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const filteredFoods = foods.filter(food => {
+    if (!adminSearchQuery) return true;
+    const q = adminSearchQuery.toLowerCase();
+    return (
+      food.name.toLowerCase().includes(q) ||
+      food.category.toLowerCase().includes(q)
+    );
+  });
 
   const handleDelete = (id: string) => {
     setDeleteId(id);
@@ -37,7 +46,7 @@ const FoodManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {foods.map(food => (
+            {filteredFoods.map(food => (
               <tr key={food.id} className="border-b border-gray-50 last:border-0">
                 <td className="p-4 font-medium text-gray-900">{food.name}</td>
                 <td className="p-4">{food.category}</td>

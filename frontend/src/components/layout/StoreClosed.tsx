@@ -237,7 +237,7 @@ const StoreClosed: React.FC<StoreClosedProps> = ({ reopenDate, closeReason, clos
         </h1>
         <p className="text-lg sm:text-xl md:text-2xl text-primary-100 mb-2 font-medium drop-shadow-md">
           {closeType === 'ONLINE_ONLY' 
-            ? "Online ordering is temporarily paused. Please visit us at our offline store!"
+            ? "Online ordering is temporarily paused. Please visit us at our offline restaurant!"
             : "We are temporarily closed."}
         </p>
         {closeReason && (

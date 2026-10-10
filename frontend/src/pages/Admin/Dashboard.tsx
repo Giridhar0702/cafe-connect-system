@@ -57,11 +57,11 @@ const Dashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Store Status</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Restaurant Status</h1>
           <p className="text-gray-500 text-sm mt-1">
             {isStoreOpen 
-              ? 'The store is currently open and accepting orders.' 
-              : `The store is closed due to: ${storeCloseReason || 'Other'}. Reopening on: ${new Date(storeReopenDate).toLocaleString()}`}
+              ? 'The restaurant is currently open and accepting orders.' 
+              : `The restaurant is closed due to: ${storeCloseReason || 'Other'}. Reopening on: ${new Date(storeReopenDate).toLocaleString()}`}
           </p>
         </div>
         
@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
             <div className="bg-red-50 p-6 flex justify-between items-start border-b border-red-100">
               <div className="flex items-center text-red-700">
                 <AlertTriangle className="w-6 h-6 mr-3" />
-                <h3 className="text-xl font-bold">CLOSE THE SHOP</h3>
+                <h3 className="text-xl font-bold">CLOSE THE RESTAURANT</h3>
               </div>
               <button onClick={() => setShowCloseModal(false)} className="text-red-400 hover:text-red-600">
                 <X className="w-6 h-6" />
@@ -136,8 +136,8 @@ const Dashboard: React.FC = () => {
               
               <p className="text-gray-500 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
                 {tempCloseType === 'ONLINE_ONLY' 
-                  ? "Customers can't place online orders, but they will be directed to visit the physical store." 
-                  : "The entire shop is closed. Customers cannot order or visit."}
+                  ? "Customers can't place online orders, but they will be directed to visit the physical restaurant." 
+                  : "The entire restaurant is closed. Customers cannot order or visit."}
               </p>
               
               <div>
@@ -167,7 +167,7 @@ const Dashboard: React.FC = () => {
                 )}
                 
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  When will the store reopen?
+                  When will the restaurant reopen?
                 </label>
                 <input
                   type="datetime-local"

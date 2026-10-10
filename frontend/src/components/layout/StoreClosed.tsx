@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 interface StoreClosedProps {
   reopenDate: string;
   closeReason?: string;
+  closeType?: 'TOTAL' | 'ONLINE_ONLY';
 }
 
 const DragonGame = () => {
@@ -169,7 +170,7 @@ const DragonGame = () => {
   );
 };
 
-const StoreClosed: React.FC<StoreClosedProps> = ({ reopenDate, closeReason }) => {
+const StoreClosed: React.FC<StoreClosedProps> = ({ reopenDate, closeReason, closeType = 'TOTAL' }) => {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -235,11 +236,13 @@ const StoreClosed: React.FC<StoreClosedProps> = ({ reopenDate, closeReason }) =>
           Elai Virundhu & Cafe
         </h1>
         <p className="text-lg sm:text-xl md:text-2xl text-primary-100 mb-2 font-medium drop-shadow-md">
-          We are temporarily closed.
+          {closeType === 'ONLINE_ONLY' 
+            ? "Online ordering is temporarily paused. Please visit us at our offline store!"
+            : "We are temporarily closed."}
         </p>
         {closeReason && (
           <p className="text-md sm:text-lg text-primary-200 mb-6 sm:mb-8 drop-shadow-md">
-            Due to: {closeReason}
+            Due to {closeReason}
           </p>
         )}
         

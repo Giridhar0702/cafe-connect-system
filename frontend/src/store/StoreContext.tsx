@@ -17,7 +17,8 @@ interface StoreContextType {
   isStoreOpen: boolean;
   storeReopenDate: string;
   storeCloseReason: string;
-  setStoreStatus: (isOpen: boolean, reopenDate?: string, closeReason?: string) => void;
+  storeCloseType: 'TOTAL' | 'ONLINE_ONLY';
+  setStoreStatus: (isOpen: boolean, reopenDate?: string, closeReason?: string, closeType?: 'TOTAL' | 'ONLINE_ONLY') => void;
   
   // Actions
   addFood: (food: FoodItem) => void;
@@ -114,13 +115,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return localStorage.getItem('storeCloseReason') || '';
   });
 
-  const setStoreStatus = (isOpen: boolean, reopenDate: string = '', closeReason: string = '') => {
+  const [storeCloseType, setStoreCloseType] = useState<'TOTAL' | 'ONLINE_ONLY'>(() => {
+    const saved = localStorage.getItem('storeCloseType');
+    return (saved === 'ONLINE_ONLY') ? 'ONLINE_ONLY' : 'TOTAL';
+  });
+
+  const setStoreStatus = (isOpen: boolean, reopenDate: string = '', closeReason: string = '', closeType: 'TOTAL' | 'ONLINE_ONLY' = 'TOTAL') => {
     setIsStoreOpen(isOpen);
     setStoreReopenDate(reopenDate);
     setStoreCloseReason(closeReason);
+    setStoreCloseType(closeType);
     localStorage.setItem('isStoreOpen', String(isOpen));
     localStorage.setItem('storeReopenDate', reopenDate);
     localStorage.setItem('storeCloseReason', closeReason);
+    localStorage.setItem('storeCloseType', closeType);
   };
 
   // Save to localStorage on change
@@ -265,7 +273,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addOffer, toggleOfferActive, deleteOffer,
       locations, addLocation, updateLocation, toggleLocationActive, deleteLocation,
       isAdminLoggedIn, setAdminLoggedIn,
-      isStoreOpen, storeReopenDate, storeCloseReason, setStoreStatus
+      isStoreOpen, storeReopenDate, storeCloseReason, storeCloseType, setStoreStatus
     }}>
       {children}
     </StoreContext.Provider>

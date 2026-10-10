@@ -27,10 +27,10 @@ import { useStore } from '../store/StoreContext';
 import StockManagement from '../pages/Admin/StockManagement';
 
 const CustomerLayout: React.FC = () => {
-  const { isStoreOpen, storeReopenDate, storeCloseReason } = useStore();
+  const { isStoreOpen, storeReopenDate, storeCloseReason, storeCloseType } = useStore();
   
   if (!isStoreOpen) {
-    return <StoreClosed reopenDate={storeReopenDate} closeReason={storeCloseReason} />;
+    return <StoreClosed reopenDate={storeReopenDate} closeReason={storeCloseReason} closeType={storeCloseType} />;
   }
   
   return (

@@ -319,7 +319,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-12">
             <div className="col-span-1 lg:col-span-2">
-              <img src="/logo.png" alt="Elai Virundhu & Cafe" className="h-16 w-auto object-contain mb-6 bg-white/10 p-2 rounded-2xl" />
+              <img src="/logo.jpg" alt="Elai Virundhu & Cafe Logo" className="h-20 w-auto object-contain mb-6 rounded-2xl bg-white p-1" />
               <p className="text-gray-400 max-w-sm mb-8 leading-relaxed">
                 Serving the best authentic food in town. Order online and experience the taste of perfection right at your doorstep.
               </p>

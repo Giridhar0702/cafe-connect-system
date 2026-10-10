@@ -24,8 +24,11 @@ const Navbar: React.FC = () => {
           <div className="flex items-center">
             {/* Desktop logo (hidden mobile hamburger) */}
             <div className="hidden md:block mr-4" />
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <img src="/logo.png" alt="Elai Virundhu & Cafe" className="h-12 w-auto object-contain" />
+            <Link to="/" className="flex-shrink-0 flex items-center space-x-2">
+              <img src="/logo.jpg" alt="Elai Virundhu & Cafe Logo" className="h-12 w-auto object-contain rounded-full shadow-sm" />
+              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent truncate max-w-[160px] sm:max-w-none">
+                Elai Virundhu & Cafe
+              </span>
             </Link>
           </div>
 

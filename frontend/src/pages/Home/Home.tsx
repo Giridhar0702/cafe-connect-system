@@ -1,23 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { Star, ChevronRight, MapPin, Plus, Minus, Mail, Phone, ShoppingCart } from 'lucide-react';
+import { Star, ChevronRight, MapPin, Plus, Minus, Mail, Phone } from 'lucide-react';
 
-const VegIcon = () => (
-  <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-green-600 rounded-[3px] bg-white shrink-0">
-    <div className="w-[8px] h-[8px] bg-green-600 rounded-full"></div>
-  </div>
-);
-
-const NonVegIcon = () => (
-  <div className="flex items-center justify-center w-4 h-4 border-[1.5px] border-red-600 rounded-[3px] bg-white shrink-0">
-    <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[6px] border-b-red-600"></div>
-  </div>
-);
-
-const isNonVeg = (name: string, description: string) => {
-  return /non veg|mutton|chicken|fish|prawn|egg|beef|nattukozhi|kochai|meat/i.test(name + ' ' + description);
-};
 
 const Home: React.FC = () => {
   const { foods, categories, cart, addToCart, updateCartQuantity } = useStore();

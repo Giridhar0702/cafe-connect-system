@@ -116,19 +116,66 @@ const OrderTracking: React.FC = () => {
           )}
 
           <div className="mt-12 bg-gray-50 rounded-2xl p-6 border border-gray-100">
-            <h3 className="font-bold text-gray-900 mb-4 text-lg">Order Details</h3>
+            <h3 className="font-bold text-gray-900 mb-6 text-lg border-b border-gray-200 pb-4">Order Details</h3>
             <div className="space-y-4">
               {order.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                <div key={idx} className="flex justify-between items-center pb-4">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-sm font-bold text-gray-700 border border-gray-200 mr-4">
                       {item.quantity}x
                     </div>
                     <span className="font-medium text-gray-800">{item.name}</span>
                   </div>
-                  <span className="font-semibold text-gray-900">₹{item.price * item.quantity}</span>
+                  <span className="font-semibold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
+            </div>
+            
+            {/* Price Details */}
+            <div className="mt-6 pt-6 border-t border-dashed border-gray-300">
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span className="font-medium">₹{(() => {
+                    const sub = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                    return sub.toFixed(2);
+                  })()}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Delivery Partner Fee</span>
+                  <span className="font-medium">₹30.00</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>CGST (2.5%)</span>
+                  <span className="font-medium">₹{(() => {
+                    const sub = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                    return (sub * 0.025).toFixed(2);
+                  })()}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>SGST (2.5%)</span>
+                  <span className="font-medium">₹{(() => {
+                    const sub = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                    return (sub * 0.025).toFixed(2);
+                  })()}</span>
+                </div>
+                
+                {/* Round Off */}
+                <div className="flex justify-between text-gray-500 text-xs italic">
+                  <span>Round Off</span>
+                  <span>{(() => {
+                    const sub = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                    const exact = sub + 30 + (sub * 0.05);
+                    const diff = Math.ceil(exact) - exact;
+                    return diff > 0 ? `+₹${diff.toFixed(2)}` : `₹0.00`;
+                  })()}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+                <span className="font-extrabold text-gray-900 text-lg">Grand Total</span>
+                <span className="font-black text-gray-900 text-xl">₹{order.total.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </div>

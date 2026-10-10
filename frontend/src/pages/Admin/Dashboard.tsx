@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/StoreContext';
-import { ShoppingBag, DollarSign, Clock, Users, AlertTriangle, X } from 'lucide-react';
+import { ShoppingBag, DollarSign, Clock, Users, AlertTriangle, X, TrendingUp, PieChart, Activity } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { orders, isStoreOpen, storeReopenDate, storeCloseReason, setStoreStatus } = useStore();
@@ -10,6 +10,7 @@ const Dashboard: React.FC = () => {
   const [tempReason, setTempReason] = useState('Kitchen Rush');
   const [customReason, setCustomReason] = useState('');
   const [tempCloseType, setTempCloseType] = useState<'TOTAL' | 'ONLINE_ONLY'>('ONLINE_ONLY');
+  const [reportType, setReportType] = useState<'TODAY' | 'ALL_TIME'>('TODAY');
 
   const todayOrders = orders.filter(o => {
     const today = new Date().toISOString().split('T')[0];
@@ -26,6 +27,31 @@ const Dashboard: React.FC = () => {
     { title: "Pending Orders", value: pendingOrders, icon: <Clock className="w-8 h-8 text-yellow-500" />, bg: "bg-yellow-50" },
     { title: "Total Customers", value: "125", icon: <Users className="w-8 h-8 text-purple-500" />, bg: "bg-purple-50" },
   ];
+
+  // Analytics Calculations
+  const ordersToAnalyze = reportType === 'TODAY' ? todayOrders : orders;
+  const totalAnalyzedRevenue = ordersToAnalyze.reduce((acc, order) => acc + order.total, 0);
+
+  const itemSales: Record<string, { name: string, quantity: number, revenue: number }> = {};
+  const categorySales: Record<string, number> = {};
+
+  ordersToAnalyze.forEach(order => {
+    order.items.forEach(item => {
+      if (!itemSales[item.id]) {
+        itemSales[item.id] = { name: item.name, quantity: 0, revenue: 0 };
+      }
+      itemSales[item.id].quantity += item.quantity;
+      itemSales[item.id].revenue += item.price * item.quantity;
+
+      if (!categorySales[item.category]) {
+        categorySales[item.category] = 0;
+      }
+      categorySales[item.category] += item.price * item.quantity;
+    });
+  });
+
+  const topItems = Object.values(itemSales).sort((a, b) => b.quantity - a.quantity);
+  const topCategories = Object.entries(categorySales).sort((a, b) => b[1] - a[1]);
 
   return (
     <div className="space-y-6">
@@ -192,6 +218,87 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Analysis & Reports Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-10 mb-4 gap-4">
+        <h2 className="text-xl font-bold text-gray-800 flex items-center">
+          <Activity className="w-5 h-5 mr-2 text-primary-500" /> {reportType === 'TODAY' ? "Today's Sales Report" : "All-Time Sales Report"}
+        </h2>
+        <div className="flex bg-gray-100 p-1 rounded-xl">
+          <button 
+            onClick={() => setReportType('TODAY')}
+            className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${reportType === 'TODAY' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Today
+          </button>
+          <button 
+            onClick={() => setReportType('ALL_TIME')}
+            className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${reportType === 'ALL_TIME' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            All Time
+          </button>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Top Selling Items */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col h-[400px]">
+          <div className="flex items-center justify-between mb-6 shrink-0">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              <TrendingUp className="w-5 h-5 text-green-500 mr-2" /> Products Sold {reportType === 'TODAY' ? 'Today' : '(All Time)'}
+            </h3>
+            <span className="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Total: ₹{totalAnalyzedRevenue}</span>
+          </div>
+          <div className="space-y-4 overflow-y-auto custom-scrollbar flex-grow pr-2">
+            {topItems.map((item, idx) => (
+              <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-bold text-gray-700 border border-gray-200 shrink-0">
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900 line-clamp-1">{item.name}</p>
+                    <p className="text-xs text-gray-500">{item.quantity} units sold</p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0 ml-2">
+                  <p className="font-bold text-green-600">₹{item.revenue.toFixed(2)}</p>
+                </div>
+              </div>
+            ))}
+            {topItems.length === 0 && <p className="text-gray-500 text-sm italic">No sales data available {reportType === 'TODAY' ? 'for today ' : ''}yet.</p>}
+          </div>
+        </div>
+
+        {/* Revenue by Category */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col h-[400px]">
+          <div className="flex items-center justify-between mb-6 shrink-0">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              <PieChart className="w-5 h-5 text-blue-500 mr-2" /> {reportType === 'TODAY' ? "Today's" : "All-Time"} Revenue by Category
+            </h3>
+          </div>
+          <div className="space-y-4 overflow-y-auto custom-scrollbar flex-grow pr-2">
+            {topCategories.map(([catName, revenue], idx) => {
+              const totalRev = Object.values(categorySales).reduce((a, b) => a + b, 0);
+              const percentage = totalRev > 0 ? ((revenue / totalRev) * 100).toFixed(1) : 0;
+              return (
+                <div key={idx} className="mb-4 last:mb-0">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-bold text-gray-700 text-sm">{catName}</span>
+                    <span className="font-bold text-gray-900 text-sm">₹{revenue.toFixed(2)} <span className="text-gray-400 font-normal text-xs">({percentage}%)</span></span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2.5">
+                    <div className="bg-primary-500 h-2.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+                  </div>
+                </div>
+              );
+            })}
+            {topCategories.length === 0 && <p className="text-gray-500 text-sm italic">No category data available yet.</p>}
+          </div>
+        </div>
+        
       </div>
     </div>
   );

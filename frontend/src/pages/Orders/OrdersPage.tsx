@@ -54,10 +54,10 @@ const Orders: React.FC = () => {
                   <div className="flex justify-between items-start border-b border-dashed border-gray-200 pb-4">
                     <div>
                       <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="text-lg font-extrabold text-gray-900">Elai Virundhu & Cafe</h3>
-                        <span className="text-sm text-gray-400 font-medium">#{order.id}</span>
+                        <h3 className="text-lg font-extrabold text-gray-900">Order #{order.id}</h3>
                       </div>
-                      <p className="text-xs sm:text-sm text-gray-500 font-medium">Sathyamangalam • {new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 font-medium">{new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mt-0.5 line-clamp-1" title={order.address}>{order.address}</p>
                     </div>
                     <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold ${
                       order.status === 'Delivered' ? 'bg-green-50 text-green-700 border border-green-200' :

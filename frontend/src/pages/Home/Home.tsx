@@ -26,24 +26,7 @@ const Home: React.FC = () => {
 
   // Auto-scroll logic for mobile slider
   useEffect(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-
-    const interval = setInterval(() => {
-      // Only auto-scroll on mobile (where it's not a grid)
-      if (window.innerWidth < 768) {
-        const maxScroll = slider.scrollWidth - slider.clientWidth;
-        if (slider.scrollLeft >= maxScroll - 10) {
-          // Reset to start if we reached the end
-          slider.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          // Scroll by one card width (280px + 24px gap = 304px)
-          slider.scrollBy({ left: 304, behavior: 'smooth' });
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
+    window.scrollTo(0, 0);
   }, []);
 
   // Use only top 4 foods for home page
@@ -234,45 +217,43 @@ const Home: React.FC = () => {
                 <div 
                   key={food.id} 
                   onClick={() => navigate(`/food/${food.id}`)}
-                  className="min-w-[300px] w-full md:min-w-0 snap-center bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:shadow-xl transition-all duration-300 flex flex-col group cursor-pointer overflow-hidden pb-4"
+                  className="min-w-[300px] w-full md:min-w-0 snap-center bg-white shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 flex flex-col group cursor-pointer pb-4"
                 >
-                  <div className="relative h-48 w-full overflow-hidden shrink-0">
+                  <div className="relative h-48 w-full shrink-0">
                     <div className="absolute inset-0 bg-gray-100 animate-pulse"></div>
                     <img 
                       src={food.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'} 
                       alt={food.name} 
-                      className="w-full h-full object-cover relative z-10 group-hover:scale-105 transition-transform duration-700 ease-in-out" 
+                      className="w-full h-full object-cover relative z-10 group-hover:opacity-90 transition-opacity duration-300" 
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
                         (e.target as HTMLImageElement).onerror = null;
                       }}
                     />
-                    {/* Bottom Gradient overlay */}
-                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10"></div>
                     
                     {!food.available && (
                       <div className="absolute inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-20">
                         <span className="text-gray-900 font-extrabold px-4 py-1.5 bg-white rounded-full text-xs shadow-xl uppercase">Sold Out</span>
                       </div>
                     )}
-                    
-                    {/* Title and Rating on Image Bottom */}
-                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end z-20">
-                      <h3 className="text-xl font-bold text-white line-clamp-1 mr-2 tracking-wide leading-tight drop-shadow-md">{food.name}</h3>
-                      <div className="bg-[#24963F] text-white px-1.5 py-0.5 rounded flex items-center shadow-md shrink-0">
+                  </div>
+                  
+                  <div className="px-4 pt-3 flex flex-col flex-grow">
+                    {/* Title & Rating */}
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="text-lg font-bold text-gray-900 line-clamp-1 mr-2">{food.name}</h3>
+                      <div className="bg-[#24963F] text-white px-1.5 py-0.5 rounded flex items-center shrink-0">
                         <Star className="w-3 h-3 mr-0.5 fill-white text-white" />
                         <span className="text-[11px] font-bold">{food.rating}</span>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="px-4 pt-3 flex flex-col flex-grow">
+                    
                     {/* Details Row 1 */}
                     <div className="flex justify-between items-center text-gray-500 text-[13px] mb-1">
                       <div className="flex items-center gap-1.5">
                         <span className="truncate max-w-[120px]">{food.category} • Food</span>
                       </div>
-                      <span className="shrink-0 font-medium text-gray-600">₹{food.price}</span>
+                      <span className="shrink-0 font-bold text-gray-800">₹{food.price}</span>
                     </div>
                     
                     {/* Details Row 2 */}

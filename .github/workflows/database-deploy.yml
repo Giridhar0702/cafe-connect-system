@@ -25,11 +25,15 @@ on:
     branches: [main]
     paths:
       - "supabase/migrations/**"
+      - "supabase/config.toml"
+      - ".github/workflows/database-deploy.yml"
 
   push:
     branches: [main]
     paths:
       - "supabase/migrations/**"
+      - "supabase/config.toml"
+      - ".github/workflows/database-deploy.yml"
 
   workflow_dispatch:
     inputs:

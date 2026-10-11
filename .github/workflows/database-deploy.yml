@@ -358,7 +358,7 @@ jobs:
             exit 1
           fi
 
-          echo "✔ pg_dump compatibility verified (PostgreSQL 17 client; config.toml major_version = 17)"
+          echo "✔ pg_dump compatibility verified (config.toml major_version = 15)"
           echo "::endgroup::"
 
       - name: Export schema snapshot
@@ -371,10 +371,6 @@ jobs:
           # Dump the public schema (DDL only, no data, no ownership/ACLs).
           # Supabase-managed extensions and internal schemas are excluded
           # because we restrict the dump to --schema public.
-          #
-          # The CLI runs pg_dump inside a container whose PG version is
-          # controlled by db.major_version in supabase/config.toml (= 17),
-          # matching the remote PostgreSQL 17.x server.
           supabase db dump --linked \
             --schema public \
             > database/schema.sql

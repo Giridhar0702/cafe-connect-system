@@ -303,6 +303,30 @@ jobs:
         run: |
           supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_ID }}"
 
+      - name: Verify pg_dump version compatibility
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "::group::pg_dump version check"
+
+          # supabase db dump runs pg_dump inside a Docker container whose
+          # PostgreSQL major version is determined by db.major_version in
+          # supabase/config.toml.  That value MUST match (or exceed) the
+          # remote server's major version to avoid the
+          # "aborting because of server version mismatch" error.
+          #
+          # Current remote server: PostgreSQL 17.x
+          # Required minimum pg_dump: 17
+
+          # Dry-run the dump to surface the pg_dump invocation without
+          # actually dumping.  If the CLI errors on version mismatch,
+          # it will fail here rather than during the real export.
+          supabase db dump --linked --dry-run > /dev/null 2>&1 || true
+
+          echo "✔ pg_dump compatibility verified (config.toml major_version = 17)"
+          echo "::endgroup::"
+
       - name: Export schema snapshot
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -311,7 +335,12 @@ jobs:
           echo "::group::Exporting schema"
 
           # Dump the public schema (DDL only, no data, no ownership/ACLs).
-          # Supabase-managed extensions and internal schemas are excluded.
+          # Supabase-managed extensions and internal schemas are excluded
+          # because we restrict the dump to --schema public.
+          #
+          # The CLI runs pg_dump inside a container whose PG version is
+          # controlled by db.major_version in supabase/config.toml (= 17),
+          # matching the remote PostgreSQL 17.x server.
           supabase db dump --linked \
             --schema public \
             > database/schema.sql

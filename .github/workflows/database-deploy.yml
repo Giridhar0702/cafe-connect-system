@@ -60,7 +60,7 @@ permissions:
 # Pinned Supabase CLI version — bump deliberately.
 # ------------------------------------------------------------------
 env:
-  SUPABASE_CLI_VERSION: "2.20.0"
+  SUPABASE_CLI_VERSION: "2.58.5"
 
 # ==================================================================
 # JOBS
@@ -310,21 +310,26 @@ jobs:
         run: |
           echo "::group::pg_dump version check"
 
-          # supabase db dump runs pg_dump inside a Docker container whose
-          # PostgreSQL major version is determined by db.major_version in
-          # supabase/config.toml.  That value MUST match (or exceed) the
-          # remote server's major version to avoid the
-          # "aborting because of server version mismatch" error.
-          #
-          # Current remote server: PostgreSQL 17.x
-          # Required minimum pg_dump: 17
+          # CLI v2.58.5 uses this PostgreSQL 17 image for db dumps.
+          PG_DUMP_IMAGE="supabase/postgres:17.6.1.043"
+          PG_DUMP_VERSION=$(docker run --rm "$PG_DUMP_IMAGE" pg_dump --version)
+          echo "$PG_DUMP_VERSION"
+          if ! echo "$PG_DUMP_VERSION" | grep -qE 'pg_dump \(PostgreSQL\) 17(\.|$)'; then
+            echo "::error::Expected a PostgreSQL 17 pg_dump client from $PG_DUMP_IMAGE"
+            exit 1
+          fi
 
-          # Dry-run the dump to surface the pg_dump invocation without
-          # actually dumping.  If the CLI errors on version mismatch,
-          # it will fail here rather than during the real export.
-          supabase db dump --linked --dry-run > /dev/null 2>&1 || true
+          dump_script=$(mktemp)
+          if ! supabase db dump --linked --dry-run > "$dump_script"; then
+            echo "::error::Supabase CLI could not generate the schema dump command"
+            exit 1
+          fi
+          if ! grep -q 'pg_dump' "$dump_script"; then
+            echo "::error::Generated schema dump command does not invoke pg_dump"
+            exit 1
+          fi
 
-          echo "✔ pg_dump compatibility verified (config.toml major_version = 17)"
+          echo "✔ pg_dump compatibility verified (PostgreSQL 17 client; config.toml major_version = 17)"
           echo "::endgroup::"
 
       - name: Export schema snapshot

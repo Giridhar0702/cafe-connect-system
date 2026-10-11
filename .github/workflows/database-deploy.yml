@@ -282,6 +282,8 @@ jobs:
       contents: write
       pull-requests: write
 
+    environment: development
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

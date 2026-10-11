@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, MapPin, Phone, Mail } from 'lucide-react';
+import { Clock, MapPin, Phone, Mail, PartyPopper, Tent } from 'lucide-react';
 
 const About: React.FC = () => {
   return (
@@ -27,6 +27,27 @@ const About: React.FC = () => {
               Our journey started with a simple belief: great food creates great memories. Our master chefs use only the freshest, locally sourced ingredients, carefully selected to create memorable culinary experiences for you and your family. 
               Whether you're craving a quick bite or planning a grand feast, we are here to serve you with joy and perfection.
             </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+              <div className="bg-orange-50 rounded-2xl p-6 border border-orange-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                <div className="bg-white p-3 rounded-xl shadow-sm text-orange-600">
+                  <PartyPopper className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-lg">Birthday Party Arrangements</h3>
+                  <p className="text-gray-600 text-sm mt-1">Celebrate your special day with us! We provide complete arrangements for birthdays and celebrations.</p>
+                </div>
+              </div>
+              <div className="bg-green-50 rounded-2xl p-6 border border-green-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                <div className="bg-white p-3 rounded-xl shadow-sm text-green-600">
+                  <Tent className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-lg">Cozy Hut Facilities</h3>
+                  <p className="text-gray-600 text-sm mt-1">Enjoy your meal in our traditional and private hut seating, perfect for families and couples.</p>
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-10">
               <div className="rounded-2xl overflow-hidden shadow-sm h-64">

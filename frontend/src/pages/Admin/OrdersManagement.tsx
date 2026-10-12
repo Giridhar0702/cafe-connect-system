@@ -1,8 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../../store/StoreContext';
-import { ChevronDown, ChevronUp, Receipt, Bluetooth, Eye, X } from 'lucide-react';
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  Receipt, 
+  Bluetooth, 
+  Eye, 
+  X, 
+  Printer, 
+  CheckCircle2, 
+  AlertCircle, 
+  Info,
+  Settings2
+} from 'lucide-react';
 import type { Order } from '../../types';
 import { bluetoothPrinter, formatLine, formatCenter } from '../../utils/printer';
+import { PrinterManagerModal } from '../../components/admin/PrinterManagerModal';
 
 const OrdersManagement: React.FC = () => {
   const { orders, updateOrderStatus, deliveryPartners, adminSearchQuery } = useStore();
@@ -18,28 +31,46 @@ const OrdersManagement: React.FC = () => {
       order.items.some(item => item.name.toLowerCase().includes(q))
     );
   });
-  const [isPrinterConnected, setIsPrinterConnected] = useState(false);
+
+  const [isPrinterConnected, setIsPrinterConnected] = useState(bluetoothPrinter.isConnected());
+  const [connectedDeviceName, setConnectedDeviceName] = useState<string | null>(bluetoothPrinter.getDeviceName());
+  const [isPrinterModalOpen, setIsPrinterModalOpen] = useState(false);
   const [viewingBillOrder, setViewingBillOrder] = useState<Order | null>(null);
+  const [printChoiceOrder, setPrintChoiceOrder] = useState<Order | null>(null);
+  const [printingBillOrder, setPrintingBillOrder] = useState<Order | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const statuses = ['Placed', 'Confirmed', 'Preparing', 'Ready', 'Out for Delivery', 'Delivered', 'Cancelled'] as const;
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(prev => prev?.message === message ? null : prev);
+    }, 4000);
+  };
+
+  useEffect(() => {
+    bluetoothPrinter.onDisconnect(() => {
+      setIsPrinterConnected(false);
+      setConnectedDeviceName(null);
+      showToast('Bluetooth printer disconnected', 'info');
+    });
+  }, []);
 
   const toggleExpand = (id: string) => {
     setExpandedOrderId(prev => prev === id ? null : id);
   };
 
-  const connectPrinter = async () => {
-    try {
-      await bluetoothPrinter.connect();
-      setIsPrinterConnected(true);
-      alert('Printer connected successfully!');
-    } catch (err: any) {
-      alert('Failed to connect: ' + err.message);
-    }
+  const triggerBrowserPrint = (order: Order) => {
+    setPrintingBillOrder(order);
+    setTimeout(() => {
+      window.print();
+    }, 150);
   };
 
-  const handlePrint = async (order: Order) => {
+  const handlePrintBluetooth = async (order: Order) => {
     if (!bluetoothPrinter.isConnected()) {
-      alert('Please connect the Bluetooth printer first using the button at the top.');
+      setPrintChoiceOrder(order);
       return;
     }
 
@@ -96,31 +127,73 @@ const OrdersManagement: React.FC = () => {
     billLines.push('-'.repeat(32));
     billLines.push(formatLine('Total', `Rs.${roundedTotal.toFixed(2)}`));
     billLines.push('');
+    billLines.push('-'.repeat(32));
+    billLines.push(formatCenter('TERMS & CONDITIONS:'));
+    billLines.push(formatCenter('No cancellation is available'));
+    billLines.push(formatCenter('& no refund at any cost.'));
+    billLines.push('-'.repeat(32));
+    billLines.push('');
     billLines.push(formatCenter('Thank you!'));
 
     try {
       await bluetoothPrinter.print(kotLines, true);
       await new Promise(r => setTimeout(r, 1000)); // Delay between prints
       await bluetoothPrinter.print(billLines, false);
+      showToast(`Printed receipt for #${order.id.slice(0, 8)}`, 'success');
     } catch (err: any) {
-      alert('Print failed: ' + err.message);
+      showToast('Bluetooth print failed: ' + err.message, 'error');
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Orders Management</h1>
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-5 right-5 z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className={`flex items-center space-x-3 px-4 py-3 rounded-2xl shadow-xl border text-sm font-semibold backdrop-blur-md ${
+            toast.type === 'success' 
+              ? 'bg-emerald-600/95 text-white border-emerald-400' 
+              : toast.type === 'error'
+              ? 'bg-rose-600/95 text-white border-rose-400'
+              : 'bg-gray-900/95 text-white border-gray-700'
+          }`}>
+            {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-200 shrink-0" />}
+            {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-200 shrink-0" />}
+            {toast.type === 'info' && <Info className="w-5 h-5 text-blue-200 shrink-0" />}
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Page Header */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Orders Management</h1>
+          <p className="text-xs text-gray-500 mt-0.5">Live order queue & thermal POS printer dispatch</p>
+        </div>
+
+        {/* Printer Setup Button */}
         <button
-          onClick={connectPrinter}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          onClick={() => setIsPrinterModalOpen(true)}
+          className={`flex items-center space-x-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm ${
             isPrinterConnected 
-              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100' 
+              : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20'
           }`}
         >
-          <Bluetooth size={18} />
-          <span>{isPrinterConnected ? 'Printer Connected' : 'Connect Bluetooth Printer'}</span>
+          <div className="relative">
+            <Bluetooth size={18} className={isPrinterConnected ? 'text-emerald-600' : 'text-white'} />
+            {isPrinterConnected && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
+            )}
+          </div>
+          <span>
+            {isPrinterConnected 
+              ? (connectedDeviceName ? `Printer: ${connectedDeviceName}` : 'Printer Online') 
+              : 'Connect Bluetooth Printer'
+            }
+          </span>
+          <Settings2 size={16} className={isPrinterConnected ? 'text-emerald-600 ml-1' : 'text-blue-200 ml-1'} />
         </button>
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -184,7 +257,14 @@ const OrdersManagement: React.FC = () => {
                           <span>View</span>
                         </button>
                         <button 
-                          onClick={(e) => { e.stopPropagation(); handlePrint(order); }}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            if (isPrinterConnected) {
+                              handlePrintBluetooth(order);
+                            } else {
+                              setPrintChoiceOrder(order);
+                            }
+                          }}
                           className="flex items-center space-x-1 px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
                           title="Print Bill & KOT"
                         >
@@ -412,22 +492,207 @@ const OrdersManagement: React.FC = () => {
                 );
               })()}
               
-              <div className="text-center mt-8 text-sm">
+              <div className="text-center mt-6 pt-3 border-t border-dashed border-gray-300 text-[11px] text-gray-500">
+                <p className="font-bold text-gray-700 uppercase tracking-wider mb-0.5">Terms &amp; Conditions</p>
+                <p>No cancellation is available and no refund will be provided at any cost.</p>
+              </div>
+
+              <div className="text-center mt-3 text-sm">
                 <p>Thank you for dining with us!</p>
               </div>
             </div>
             
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+            <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between flex-wrap gap-2">
               <button 
                 onClick={() => {
-                  handlePrint(viewingBillOrder);
-                  setViewingBillOrder(null);
+                  triggerBrowserPrint(viewingBillOrder);
                 }}
-                className="px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl shadow-sm hover:bg-primary-700 transition flex items-center"
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold rounded-xl text-sm transition flex items-center shadow-sm"
               >
-                <Receipt className="w-4 h-4 mr-2" /> Print This Bill
+                <Printer className="w-4 h-4 mr-2 text-gray-600" /> System Print (USB)
+              </button>
+
+              <button 
+                onClick={() => {
+                  if (isPrinterConnected) {
+                    handlePrintBluetooth(viewingBillOrder);
+                    setViewingBillOrder(null);
+                  } else {
+                    setPrintChoiceOrder(viewingBillOrder);
+                  }
+                }}
+                className="px-5 py-2.5 bg-primary-600 text-white font-bold rounded-xl shadow-sm hover:bg-primary-700 transition flex items-center"
+              >
+                <Receipt className="w-4 h-4 mr-2" /> 
+                {isPrinterConnected ? 'Print (Bluetooth)' : 'Print / Connect Printer'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Print Method Selector Modal (if printer not connected) */}
+      {printChoiceOrder && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in duration-200">
+            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-base text-gray-800 flex items-center">
+                <Printer className="w-5 h-5 mr-2 text-blue-600" /> Print Order #{printChoiceOrder.id.slice(0, 8)}
+              </h3>
+              <button 
+                onClick={() => setPrintChoiceOrder(null)}
+                className="p-1.5 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3">
+              <p className="text-xs text-gray-500">
+                Choose how you want to print the receipt and KOT for customer <strong>{printChoiceOrder.customerName}</strong>:
+              </p>
+
+              {/* Option 1: System / Browser Print */}
+              <button
+                onClick={() => {
+                  const ord = printChoiceOrder;
+                  setPrintChoiceOrder(null);
+                  triggerBrowserPrint(ord);
+                }}
+                className="w-full text-left p-4 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 transition flex items-start space-x-3 group"
+              >
+                <div className="p-2.5 rounded-lg bg-blue-100 text-blue-700 group-hover:bg-blue-600 group-hover:text-white transition">
+                  <Printer className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-bold text-sm text-gray-800">Browser / System Print (Recommended)</div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    Prints instantly on USB, Network, or Windows-paired thermal receipt printers.
+                  </div>
+                </div>
+              </button>
+
+              {/* Option 2: Connect Bluetooth Printer */}
+              <button
+                onClick={() => {
+                  setPrintChoiceOrder(null);
+                  setIsPrinterModalOpen(true);
+                }}
+                className="w-full text-left p-4 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 transition flex items-start space-x-3 group"
+              >
+                <div className="p-2.5 rounded-lg bg-indigo-100 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white transition">
+                  <Bluetooth className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-bold text-sm text-gray-800">Pair Bluetooth Thermal Printer</div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    Connect wireless ESC/POS thermal printer via Web Bluetooth.
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="p-3 bg-gray-50 border-t border-gray-100 flex justify-end">
+              <button
+                onClick={() => setPrintChoiceOrder(null)}
+                className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-200 rounded-lg transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Printer Management Modal */}
+      <PrinterManagerModal
+        isOpen={isPrinterModalOpen}
+        onClose={() => setIsPrinterModalOpen(false)}
+        isPrinterConnected={isPrinterConnected}
+        connectedDeviceName={connectedDeviceName}
+        onConnectionChange={(connected, devName) => {
+          setIsPrinterConnected(connected);
+          setConnectedDeviceName(devName);
+        }}
+        onShowToast={showToast}
+      />
+
+      {/* Hidden Thermal Printable Slip for System Browser Printing */}
+      {printingBillOrder && (
+        <div id="printable-receipt" className="hidden print:block">
+          <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 4px 0' }}>Elai Virundhu &amp; Cafe</h2>
+            <div style={{ fontSize: '11px' }}>Order: #{printingBillOrder.id.slice(0, 8)}</div>
+            <div style={{ fontSize: '11px' }}>Customer: {printingBillOrder.customerName}</div>
+            <div style={{ fontSize: '11px' }}>Phone: {printingBillOrder.phone}</div>
+            <div style={{ fontSize: '11px' }}>Date: {new Date(printingBillOrder.date).toLocaleString()}</div>
+          </div>
+
+          <div style={{ borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '6px 0', margin: '6px 0' }}>
+            <table style={{ width: '100%', fontSize: '12px' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', paddingBottom: '4px' }}>Item</th>
+                  <th style={{ textAlign: 'right', paddingBottom: '4px' }}>Qty</th>
+                  <th style={{ textAlign: 'right', paddingBottom: '4px' }}>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {printingBillOrder.items.map((item, idx) => (
+                  <tr key={idx}>
+                    <td style={{ textAlign: 'left', padding: '2px 0' }}>{item.name}</td>
+                    <td style={{ textAlign: 'right', padding: '2px 0' }}>{item.quantity}</td>
+                    <td style={{ textAlign: 'right', padding: '2px 0' }}>Rs.{(item.price * item.quantity).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {(() => {
+            const subtotal = printingBillOrder.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            const cgst = subtotal * 0.025;
+            const sgst = subtotal * 0.025;
+            let exactTotal = subtotal + cgst + sgst;
+            let deliveryFee = 0;
+            if (printingBillOrder.total > Math.ceil(exactTotal) + 10) {
+              deliveryFee = 30;
+              exactTotal += 30;
+            }
+            const roundedTotal = Math.ceil(exactTotal);
+
+            return (
+              <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Subtotal:</span>
+                  <span>Rs.{subtotal.toFixed(2)}</span>
+                </div>
+                {deliveryFee > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Delivery Fee:</span>
+                    <span>Rs.{deliveryFee.toFixed(2)}</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>CGST (2.5%):</span>
+                  <span>Rs.{cgst.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>SGST (2.5%):</span>
+                  <span>Rs.{sgst.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', borderTop: '1px dashed #000', paddingTop: '4px', marginTop: '4px' }}>
+                  <span>TOTAL:</span>
+                  <span>Rs.{roundedTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            );
+          })()}
+
+          <div style={{ textAlign: 'center', marginTop: '10px', paddingTop: '6px', borderTop: '1px dashed #000', fontSize: '10px' }}>
+            <div style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>Terms &amp; Conditions:</div>
+            <div>No cancellation is available and no refund will be provided at any cost.</div>
+            <div style={{ marginTop: '6px', fontSize: '11px' }}>Thank you for dining with us!</div>
           </div>
         </div>
       )}

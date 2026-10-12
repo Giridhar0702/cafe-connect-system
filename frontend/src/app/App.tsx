@@ -20,6 +20,7 @@ import EditFood from '../pages/Admin/EditFood';
 import OrdersManagement from '../pages/Admin/OrdersManagement';
 import LocationsManagement from '../pages/Admin/LocationsManagement';
 import CustomersManagement from '../pages/Admin/CustomersManagement';
+import CategoriesManagement from '../pages/Admin/CategoriesManagement';
 import AdminLogin from '../pages/Admin/AdminLogin';
 import StoreClosed from '../components/layout/StoreClosed';
 import { useStore } from '../store/StoreContext';
@@ -79,6 +80,7 @@ function App() {
             <Route path="foods" element={<FoodManagement />} />
             <Route path="foods/add" element={<AddFood />} />
             <Route path="foods/:id/edit" element={<EditFood />} />
+            <Route path="categories" element={<CategoriesManagement />} />
             <Route path="stock" element={<StockManagement />} />
             <Route path="orders" element={<OrdersManagement />} />
             <Route path="customers" element={<CustomersManagement />} />

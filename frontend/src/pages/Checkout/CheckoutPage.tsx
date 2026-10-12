@@ -35,6 +35,7 @@ type CheckoutFormValues = {
   pincode?: string;
   landmark?: string;
   paymentMethod: 'UPI' | 'Card' | 'COD';
+  agreeTerms: boolean;
 };
 
 const Checkout: React.FC = () => {
@@ -52,7 +53,10 @@ const Checkout: React.FC = () => {
       state: z.string().optional(),
       pincode: z.string().optional(),
       landmark: z.string().optional(),
-      paymentMethod: z.enum(['UPI', 'Card', 'COD'])
+      paymentMethod: z.enum(['UPI', 'Card', 'COD']),
+      agreeTerms: z.boolean().refine((val) => val === true, {
+        message: 'You must check and agree to the Terms & Conditions (no cancellation & no refund) to place an order.'
+      })
     }).superRefine((data, ctx) => {
       const selectedLoc = locations.find(l => l.id === data.locationType);
       
@@ -115,7 +119,8 @@ const Checkout: React.FC = () => {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       locationType: locations.find(l => l.active)?.id || '',
-      paymentMethod: 'UPI'
+      paymentMethod: 'UPI',
+      agreeTerms: false
     }
   });
 
@@ -363,6 +368,38 @@ const Checkout: React.FC = () => {
                   <span className="text-lg font-bold text-gray-900">Total</span>
                   <span className="text-2xl font-bold text-primary-600">₹{total.toFixed(2)}</span>
                 </div>
+              </div>
+
+              {/* Mandatory Terms & Conditions Checkbox */}
+              <div className="space-y-1.5">
+                <label 
+                  htmlFor="agreeTerms"
+                  className={`flex items-start space-x-3 p-3.5 rounded-xl border transition-all cursor-pointer ${
+                    errors.agreeTerms 
+                      ? 'bg-rose-50/90 border-rose-300 ring-2 ring-rose-100' 
+                      : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200/90 hover:border-amber-300 shadow-sm'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    id="agreeTerms"
+                    {...register('agreeTerms')}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer shrink-0"
+                  />
+                  <div className="text-xs text-amber-950 leading-relaxed select-none">
+                    <span className="font-bold text-amber-900 uppercase tracking-wide mr-1">
+                      I agree to the Terms &amp; Conditions <span className="text-rose-600 font-extrabold">*</span>:
+                    </span>
+                    <span className="text-amber-800 font-medium">
+                      I understand that <strong>no cancellation is available</strong> and <strong>no refund will be provided at any cost</strong> once the order is placed.
+                    </span>
+                  </div>
+                </label>
+                {errors.agreeTerms && (
+                  <p className="text-xs text-rose-600 font-semibold flex items-center gap-1.5 pl-1 animate-in fade-in duration-200">
+                    <span>⚠️</span> {errors.agreeTerms.message}
+                  </p>
+                )}
               </div>
 
               <button 

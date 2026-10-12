@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/StoreContext';
 import { Link } from 'react-router-dom';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, Layers, Plus } from 'lucide-react';
 
 const FoodManagement: React.FC = () => {
   const { foods, deleteFood, toggleFoodAvailability, adminSearchQuery } = useStore();
@@ -31,7 +31,22 @@ const FoodManagement: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Food Management</h1>
-        <Link to="/admin/foods/add" className="bg-primary-600 text-white px-4 py-2 rounded-xl">Add Food</Link>
+        <div className="flex items-center gap-3">
+          <Link 
+            to="/admin/categories" 
+            className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition shadow-sm"
+          >
+            <Layers className="w-4 h-4 text-primary-600" />
+            Manage Categories
+          </Link>
+          <Link 
+            to="/admin/foods/add" 
+            className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Add Food
+          </Link>
+        </div>
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
         <table className="w-full text-left min-w-[700px]">

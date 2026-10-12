@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { FoodItem, FoodCategory, Order, CartItem, Review, Offer, DeliveryLocation, DeliveryPartner } from '../types';
+import type { FoodItem, FoodCategory, Order, CartItem, Review, Offer, DeliveryLocation, DeliveryPartner, CategoryItem } from '../types';
 import { initialFoods, initialCategories, initialOrders, initialReviews, initialOffers, initialLocations } from '../mocks/mockData';
 
 interface StoreContextType {
   foods: FoodItem[];
   categories: FoodCategory[];
+  categoryItems: CategoryItem[];
   orders: Order[];
   reviews: Review[];
   offers: Offer[];
@@ -29,6 +30,10 @@ interface StoreContextType {
   
   addCategory: (category: FoodCategory) => void;
   deleteCategory: (category: FoodCategory) => void;
+  addCategoryItem: (item: Omit<CategoryItem, 'id'>) => void;
+  updateCategoryItem: (item: CategoryItem) => void;
+  deleteCategoryItem: (id: string) => void;
+  toggleCategoryItemActive: (id: string) => void;
   
   addToCart: (food: FoodItem) => void;
   removeFromCart: (id: string) => void;
@@ -69,14 +74,33 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return initialFoods;
   });
   
-  const [categories, setCategories] = useState<FoodCategory[]>(() => {
-    const saved = localStorage.getItem('categories');
-    const parsed = saved ? JSON.parse(saved) : null;
-    if (parsed && parsed.length >= 10) {
-      return parsed;
+  const defaultCategoryItems: CategoryItem[] = initialCategories.map((name, index) => ({
+    id: `cat-${index + 1}`,
+    name,
+    description: `${name} items and specials`,
+    displayOrder: index + 1,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }));
+
+  const [categoryItems, setCategoryItems] = useState<CategoryItem[]>(() => {
+    const saved = localStorage.getItem('categoryItems');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
     }
-    return initialCategories;
+    return defaultCategoryItems;
   });
+
+  const categories = categoryItems
+    .filter(c => c.isActive)
+    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .map(c => c.name);
   
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('orders');
@@ -151,7 +175,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Save to localStorage on change
   useEffect(() => { localStorage.setItem('foods', JSON.stringify(foods)); }, [foods]);
-  useEffect(() => { localStorage.setItem('categories', JSON.stringify(categories)); }, [categories]);
+  useEffect(() => { 
+    localStorage.setItem('categoryItems', JSON.stringify(categoryItems)); 
+    localStorage.setItem('categories', JSON.stringify(categories));
+  }, [categoryItems, categories]);
   useEffect(() => { localStorage.setItem('orders', JSON.stringify(orders)); }, [orders]);
   useEffect(() => { localStorage.setItem('reviews', JSON.stringify(reviews)); }, [reviews]);
   useEffect(() => { localStorage.setItem('offers', JSON.stringify(offers)); }, [offers]);
@@ -165,9 +192,46 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toggleFoodAvailability = (id: string) => {
     setFoods(foods.map(f => f.id === id ? { ...f, available: !f.available } : f));
   };
-  
-  const addCategory = (cat: FoodCategory) => setCategories([...categories, cat]);
-  const deleteCategory = (cat: FoodCategory) => setCategories(categories.filter(c => c !== cat));
+
+  const addCategoryItem = (item: Omit<CategoryItem, 'id'>) => {
+    const id = `cat-${Date.now()}`;
+    const newItem: CategoryItem = {
+      ...item,
+      id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    setCategoryItems(prev => [...prev, newItem]);
+  };
+
+  const updateCategoryItem = (updated: CategoryItem) => {
+    const existing = categoryItems.find(c => c.id === updated.id);
+    if (existing && existing.name !== updated.name) {
+      setFoods(prev => prev.map(f => f.category === existing.name ? { ...f, category: updated.name } : f));
+    }
+    setCategoryItems(prev => prev.map(c => c.id === updated.id ? { ...updated, updatedAt: new Date().toISOString() } : c));
+  };
+
+  const deleteCategoryItem = (id: string) => {
+    setCategoryItems(prev => prev.filter(c => c.id !== id));
+  };
+
+  const toggleCategoryItemActive = (id: string) => {
+    setCategoryItems(prev => prev.map(c => c.id === id ? { ...c, isActive: !c.isActive, updatedAt: new Date().toISOString() } : c));
+  };
+
+  const addCategory = (cat: FoodCategory) => {
+    addCategoryItem({
+      name: cat,
+      description: `${cat} items`,
+      displayOrder: categoryItems.length + 1,
+      isActive: true
+    });
+  };
+
+  const deleteCategory = (cat: FoodCategory) => {
+    setCategoryItems(prev => prev.filter(c => c.name !== cat));
+  };
 
   const addToCart = (food: FoodItem) => {
     setCart(prev => {
@@ -306,9 +370,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <StoreContext.Provider value={{
-      foods, categories, orders, reviews, offers, cart,
+      foods, categories, categoryItems, orders, reviews, offers, cart,
       addFood, updateFood, deleteFood, toggleFoodAvailability,
       addCategory, deleteCategory,
+      addCategoryItem, updateCategoryItem, deleteCategoryItem, toggleCategoryItemActive,
       addToCart, removeFromCart, updateCartQuantity, clearCart,
       placeOrder, updateOrderStatus,
       addOffer, toggleOfferActive, deleteOffer,

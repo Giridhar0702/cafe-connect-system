@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { Star, ChevronRight, MapPin, Plus, Minus, Mail, Phone } from 'lucide-react';
+import { ChevronRight, MapPin, Plus, Minus, Mail, Phone } from 'lucide-react';
 
 
 const Home: React.FC = () => {
@@ -224,13 +224,9 @@ const Home: React.FC = () => {
                   </div>
                   
                   <div className="px-4 pt-3 flex flex-col flex-grow">
-                    {/* Title & Rating */}
+                    {/* Title */}
                     <div className="flex justify-between items-start mb-1">
                       <h3 className="text-lg font-bold text-gray-900 line-clamp-1 mr-2">{food.name}</h3>
-                      <div className="bg-[#24963F] text-white px-1.5 py-0.5 rounded flex items-center shrink-0">
-                        <Star className="w-3 h-3 mr-0.5 fill-white text-white" />
-                        <span className="text-[11px] font-bold">{food.rating}</span>
-                      </div>
                     </div>
                     
                     {/* Details Row 1 */}
@@ -246,7 +242,6 @@ const Home: React.FC = () => {
                       <div className="flex items-center gap-1.5 truncate">
                          {(food.foodType === 'NONVEG' || /non veg|mutton|chicken|fish|prawn|beef|nattukozhi|kochai|meat/i.test(food.name + ' ' + food.description)) ? <span className="text-red-500 font-medium">Non-Veg</span> : (food.foodType === 'EGG' || /egg|omelette|muttai/i.test(food.name + ' ' + food.description)) ? <span className="text-yellow-600 font-medium">Egg</span> : <span className="text-green-600 font-medium">Veg</span>}
                       </div>
-                      <span className="shrink-0">{food.prepTime} mins</span>
                     </div>
                     
                     {/* Add to Cart Area */}

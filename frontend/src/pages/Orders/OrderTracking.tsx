@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { CheckCircle, Clock, ChefHat, Bike, Home, ArrowLeft, PhoneCall, User } from 'lucide-react';
+import { CheckCircle, Clock, ChefHat, Bike, Home, ArrowLeft, PhoneCall, User, ShieldAlert } from 'lucide-react';
 
 const statuses = ['Placed', 'Confirmed', 'Preparing', 'Ready', 'Out for Delivery', 'Delivered'];
 
@@ -197,6 +197,17 @@ const OrderTracking: React.FC = () => {
                 <span className="font-extrabold text-gray-900 text-lg">Grand Total</span>
                 <span className="font-black text-gray-900 text-xl">₹{order.total.toFixed(2)}</span>
               </div>
+            </div>
+          </div>
+
+          {/* Terms & Conditions Notice */}
+          <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200/90 flex items-start space-x-3.5 text-amber-950 shadow-sm">
+            <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-xs sm:text-sm leading-relaxed">
+              <span className="font-bold text-amber-900 uppercase tracking-wide mr-1.5">Terms & Conditions:</span>
+              <span className="font-semibold text-amber-800">
+                Please note that once an order is placed, no cancellation is available and no refund will be provided at any cost.
+              </span>
             </div>
           </div>
         </div>

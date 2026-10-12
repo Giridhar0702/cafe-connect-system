@@ -105,8 +105,8 @@ export const initialOffers: Offer[] = [
 ];
 
 export const initialLocations: DeliveryLocation[] = [
-  { id: 'loc1', name: 'BIT MINI CAFE - BOYS', type: 'CAFE', requiresMealType: true, offersBreakfast: true, offersLunch: true, offersDinner: true, active: true, breakfastCutoff: '08:30', lunchCutoff: '11:00', dinnerCutoff: '17:30' },
-  { id: 'loc2', name: 'BIT MINI CAFE - GIRLS', type: 'CAFE', requiresMealType: true, offersBreakfast: true, offersLunch: true, offersDinner: true, active: true, breakfastCutoff: '08:30', lunchCutoff: '11:00', dinnerCutoff: '17:30' },
+  { id: 'loc1', name: 'BIT MINI CAFE - BOYS', type: 'CAFE', requiresMealType: true, offersBreakfast: true, offersLunch: true, offersDinner: true, active: true },
+  { id: 'loc2', name: 'BIT MINI CAFE - GIRLS', type: 'CAFE', requiresMealType: true, offersBreakfast: true, offersLunch: true, offersDinner: true, active: true },
   { id: 'loc3', name: 'BIT QUARTERS', type: 'QUARTERS', requiresMealType: false, active: true },
   { id: 'loc4', name: 'Custom Address', type: 'CUSTOM', requiresMealType: false, active: true }
 ];

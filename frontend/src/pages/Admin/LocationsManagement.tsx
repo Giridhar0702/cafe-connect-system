@@ -14,7 +14,7 @@ const formatTime = (time?: string) => {
 
 const LocationsManagement: React.FC = () => {
   const { locations, addLocation, updateLocation, toggleLocationActive, deleteLocation } = useStore();
-  const defaultNewLoc = { name: '', type: 'CAFE', requiresMealType: true, offersBreakfast: true, offersLunch: true, offersDinner: true, active: true, breakfastCutoff: '08:30', lunchCutoff: '11:00', dinnerCutoff: '17:30' } as Partial<DeliveryLocation>;
+  const defaultNewLoc = { name: '', type: 'CAFE', requiresMealType: true, offersBreakfast: true, offersLunch: true, offersDinner: true, active: true } as Partial<DeliveryLocation>;
   const [newLoc, setNewLoc] = useState<Partial<DeliveryLocation>>(defaultNewLoc);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

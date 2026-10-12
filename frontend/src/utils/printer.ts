@@ -30,8 +30,18 @@ export class EscPosPrinter {
   private device: any = null;
   private server: any = null;
   private characteristic: any = null;
+  private disconnectCallback: (() => void) | null = null;
 
-  async connect() {
+  onDisconnect(callback: () => void) {
+    this.disconnectCallback = callback;
+  }
+
+  getDeviceName(): string | null {
+    if (!this.device) return null;
+    return this.device.name || 'Bluetooth POS Printer';
+  }
+
+  async connect(): Promise<string> {
     try {
       if (!(navigator as any).bluetooth) {
         throw new Error('Web Bluetooth API is not supported in this browser. Please use Chrome/Edge on Desktop or Android.');
@@ -42,8 +52,20 @@ export class EscPosPrinter {
         optionalServices: [
           '000018f0-0000-1000-8000-00805f9b34fb', // Standard POS Printer Service
           'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // Alternative POS Printer Service
-          '49535343-fe7d-4ae5-8fa9-9fafd205e455', // Another common SPP/printer UUID
+          '49535343-fe7d-4ae5-8fa9-9fafd205e455', // Common SPP/printer UUID
+          '0000e0ff-0000-1000-8000-00805f9b34fb', // Chinese ESC/POS Mini printers
+          '0000ff00-0000-1000-8000-00805f9b34fb', // Custom thermal service
+          '0000af30-0000-1000-8000-00805f9b34fb', // Goojprt / MPT printers
         ] 
+      });
+
+      // Listen for unexpected disconnections
+      this.device.addEventListener('gattserverdisconnected', () => {
+        this.characteristic = null;
+        this.server = null;
+        if (this.disconnectCallback) {
+          this.disconnectCallback();
+        }
       });
 
       this.server = await this.device.gatt.connect();
@@ -62,10 +84,10 @@ export class EscPosPrinter {
       }
 
       if (!this.characteristic) {
-        throw new Error('Could not find a writable print characteristic on this device.');
+        throw new Error('Connected to device, but could not find a writable print characteristic. Make sure you selected a compatible ESC/POS thermal printer.');
       }
 
-      return true;
+      return this.getDeviceName() || 'Bluetooth Printer';
     } catch (error) {
       console.error('Connection error:', error);
       throw error;
@@ -73,7 +95,21 @@ export class EscPosPrinter {
   }
 
   isConnected() {
-    return this.device && this.device.gatt.connected && this.characteristic;
+    return Boolean(this.device && this.device.gatt?.connected && this.characteristic);
+  }
+
+  async printTest() {
+    const lines = [
+      formatCenter('TEST RECEIPT'),
+      formatCenter('Elai Virundhu & Cafe'),
+      '-'.repeat(32),
+      formatLine('Status', 'Printer Connected'),
+      formatLine('Interface', 'Bluetooth BLE'),
+      formatLine('Time', new Date().toLocaleTimeString()),
+      '-'.repeat(32),
+      formatCenter('Test successful! Ready to print.'),
+    ];
+    await this.print(lines, false);
   }
 
   async print(textLines: string[], isKot = false) {
@@ -106,7 +142,6 @@ export class EscPosPrinter {
       data.push(...COMMANDS.ALIGN_LEFT);
       
       for (const line of textLines) {
-        // Send a bold command manually if a line starts with a marker, just as a trick if we wanted to
         data.push(...Array.from(encoder.encode(line + '\n')));
       }
 
@@ -130,12 +165,15 @@ export class EscPosPrinter {
   }
   
   disconnect() {
-    if (this.device && this.device.gatt.connected) {
+    if (this.device && this.device.gatt?.connected) {
       this.device.gatt.disconnect();
     }
     this.characteristic = null;
     this.server = null;
     this.device = null;
+    if (this.disconnectCallback) {
+      this.disconnectCallback();
+    }
   }
 }
 

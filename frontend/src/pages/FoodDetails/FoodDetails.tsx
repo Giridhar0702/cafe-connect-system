@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { Star, Clock, ArrowLeft, Plus, Minus, Info } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, Info } from 'lucide-react';
 
 const FoodDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,16 +70,6 @@ const FoodDetails: React.FC = () => {
                 )}
               </div>
               <h1 className="text-4xl font-extrabold text-gray-900 mb-2">{food.name}</h1>
-              <div className="flex items-center space-x-6 text-gray-600">
-                <span className="flex items-center font-medium bg-green-50 text-green-700 px-2 py-1 rounded-md">
-                  <Star className="w-5 h-5 text-green-500 mr-1 fill-current" />
-                  {food.rating} Rating
-                </span>
-                <span className="flex items-center font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded-md">
-                  <Clock className="w-5 h-5 text-blue-500 mr-1" />
-                  {food.prepTime} min
-                </span>
-              </div>
             </div>
             <div className="text-left md:text-right">
               <p className="text-sm text-gray-500 font-medium mb-1">Price</p>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
-import { Package, ChevronRight } from 'lucide-react';
+import { Package, ChevronRight, ShieldAlert } from 'lucide-react';
 
 const Orders: React.FC = () => {
   const { orders } = useStore();
@@ -18,7 +18,20 @@ const Orders: React.FC = () => {
   return (
     <div className="min-h-screen bg-white md:bg-gray-50 py-6 md:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-8">My Orders</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h1 className="text-3xl font-extrabold text-gray-900">My Orders</h1>
+        </div>
+
+        {/* Terms & Conditions Banner */}
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 flex items-start space-x-3 text-amber-950 shadow-sm">
+          <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm leading-relaxed">
+            <span className="font-bold text-amber-900 uppercase tracking-wide mr-1.5">Terms & Conditions:</span>
+            <span className="font-semibold text-amber-800">
+              Please note that once an order is placed, no cancellation is available and no refund will be provided at any cost.
+            </span>
+          </div>
+        </div>
         
         {/* Filters */}
         <div className="flex overflow-x-auto pb-4 mb-6 hide-scrollbar space-x-3">
@@ -80,6 +93,10 @@ const Orders: React.FC = () => {
                     <div>
                       <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-0.5">Total Amount</p>
                       <p className="text-gray-900 font-black text-lg">₹{order.total.toFixed(2)}</p>
+                      <p className="text-[11px] text-amber-700 font-medium mt-0.5 flex items-center">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 inline-block"></span>
+                        No cancellation &bull; Non-refundable
+                      </p>
                     </div>
                     <div className="w-full sm:w-auto flex space-x-3">
                       <button 

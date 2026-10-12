@@ -67,6 +67,14 @@ const OrderSuccess: React.FC = () => {
               </div>
               <span className="font-bold text-primary-600 text-lg">₹{order.total.toFixed(2)}</span>
             </div>
+            <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent w-full"></div>
+
+            <div className="text-left bg-amber-50/80 rounded-2xl p-3.5 border border-amber-200/80 text-xs text-amber-950">
+              <span className="font-bold text-amber-900 block mb-0.5 uppercase tracking-wider text-[11px]">Terms &amp; Conditions:</span>
+              <span className="text-amber-800 font-medium">
+                Please note: No cancellation is available and no refund will be provided at any cost.
+              </span>
+            </div>
             
           </div>
         </div>

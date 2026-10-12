@@ -9,8 +9,8 @@ export interface FoodItem {
   price: number;
   category: FoodCategory;
   imageUrl: string;
-  rating: number;
-  prepTime: number;
+  rating?: number;
+  prepTime?: number;
   available: boolean;
   featured: boolean;
   foodType?: 'VEG' | 'NONVEG' | 'EGG';
@@ -82,7 +82,17 @@ export interface DeliveryLocation {
   offersLunch?: boolean;
   offersDinner?: boolean;
   active: boolean;
-  breakfastCutoff?: string; // HH:mm format, e.g. "08:30"
-  lunchCutoff?: string;     // HH:mm format, e.g. "11:00"
-  dinnerCutoff?: string;    // HH:mm format, e.g. "17:30"
+  breakfastCutoff?: string; // HH:mm format; optional, no default cutoff
+  lunchCutoff?: string;     // HH:mm format; optional, no default cutoff
+  dinnerCutoff?: string;    // HH:mm format; optional, no default cutoff
+}
+
+export interface CategoryItem {
+  id: string;
+  name: string;
+  description?: string;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }

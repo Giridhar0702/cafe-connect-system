@@ -10,12 +10,10 @@ const foodSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   price: z.coerce.number().positive('Price must be greater than 0'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  prepTime: z.coerce.number().positive('Preparation time must be greater than 0'),
   imageUrl: z.string().url('Valid image URL is required'),
   available: z.boolean(),
   featured: z.boolean(),
-  stockLimit: z.string().optional(),
-  foodType: z.enum(['VEG', 'NONVEG', 'EGG']).optional(),
+  foodType: z.enum(['VEG', 'NONVEG', 'EGG'], { message: 'Food type is required' }),
 });
 
 type FoodFormValues = z.infer<typeof foodSchema>;
@@ -38,12 +36,10 @@ const EditFood: React.FC = () => {
         category: food.category,
         price: food.price,
         description: food.description,
-        prepTime: food.prepTime,
         imageUrl: food.imageUrl,
         available: food.available,
         featured: food.featured,
         foodType: food.foodType,
-        stockLimit: food.stock != null ? food.stock.toString() : '',
       });
     }
   }, [food, reset]);
@@ -56,10 +52,7 @@ const EditFood: React.FC = () => {
     const updatedFood = {
       ...food,
       ...data,
-      stock: data.stockLimit ? parseInt(data.stockLimit) : undefined,
     };
-    // Clean up temporary form field
-    delete (updatedFood as any).stockLimit;
     
     updateFood(updatedFood);
     navigate('/admin/foods');
@@ -92,11 +85,12 @@ const EditFood: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Food Type</label>
               <select {...register('foodType')} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500">
-                <option value="">Auto-detect</option>
-                <option value="VEG">Vegetarian</option>
-                <option value="NONVEG">Non-Vegetarian</option>
+                <option value="">Select Food Type</option>
+                <option value="VEG">Vegetarian (Veg)</option>
+                <option value="NONVEG">Non-Vegetarian (Non-Veg)</option>
                 <option value="EGG">Egg</option>
               </select>
+              {errors.foodType && <p className="mt-1 text-sm text-red-600">{errors.foodType.message}</p>}
             </div>
             
             <div>
@@ -109,17 +103,6 @@ const EditFood: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
               <textarea {...register('description')} rows={3} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
               {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preparation Time (minutes)</label>
-              <input {...register('prepTime')} type="number" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
-              {errors.prepTime && <p className="mt-1 text-sm text-red-600">{errors.prepTime.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Daily Limit (Optional)</label>
-              <input {...register('stockLimit')} type="number" placeholder="Leave blank for unlimited" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
             </div>
             
             <div className="md:col-span-2">

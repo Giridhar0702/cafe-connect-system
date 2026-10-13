@@ -304,7 +304,7 @@ const Home: React.FC = () => {
                 <li><Link to="/" className="hover:text-primary-400 transition-colors flex items-center group"><ChevronRight className="w-4 h-4 mr-2 text-gray-600 group-hover:text-primary-400 transition-colors" />Home</Link></li>
                 <li><Link to="/menu" className="hover:text-primary-400 transition-colors flex items-center group"><ChevronRight className="w-4 h-4 mr-2 text-gray-600 group-hover:text-primary-400 transition-colors" />Our Menu</Link></li>
                 <li><Link to="/profile" className="hover:text-primary-400 transition-colors flex items-center group"><ChevronRight className="w-4 h-4 mr-2 text-gray-600 group-hover:text-primary-400 transition-colors" />My Account</Link></li>
-                <li><Link to="/orders" className="hover:text-primary-400 transition-colors flex items-center group"><ChevronRight className="w-4 h-4 mr-2 text-gray-600 group-hover:text-primary-400 transition-colors" />Track Order</Link></li>
+                <li><Link to="/about" className="hover:text-primary-400 transition-colors flex items-center group"><ChevronRight className="w-4 h-4 mr-2 text-gray-600 group-hover:text-primary-400 transition-colors" />About Us</Link></li>
               </ul>
             </div>
             

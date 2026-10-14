@@ -8,14 +8,25 @@ const statuses = ['Placed', 'Confirmed', 'Preparing', 'Ready', 'Out for Delivery
 const OrderTracking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { orders } = useStore();
-  const order = orders.find(o => o.id === id);
+  const order = orders.find(o => o.id?.toLowerCase() === id?.toLowerCase());
 
   if (!order) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Order not found</h2>
-          <Link to="/menu" className="text-primary-600 hover:underline">Back to Menu</Link>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-center bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-md w-full">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">Order not found</h2>
+          <p className="text-gray-500 text-sm mb-6">We could not find an order with ID &ldquo;{id}&rdquo;.</p>
+          <div className="flex gap-3 justify-center">
+            <Link to="/orders" className="px-5 py-2.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition text-sm">
+              My Orders
+            </Link>
+            <Link to="/menu" className="px-5 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition text-sm">
+              Back to Menu
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -40,8 +51,8 @@ const OrderTracking: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Link to="/menu" className="inline-flex items-center text-gray-500 hover:text-gray-900 mb-8 transition font-medium">
-          <ArrowLeft className="w-5 h-5 mr-2" /> Back to Menu
+        <Link to="/orders" className="inline-flex items-center text-gray-500 hover:text-gray-900 mb-8 transition font-medium">
+          <ArrowLeft className="w-5 h-5 mr-2" /> Back to My Orders
         </Link>
         
         <div className="bg-white rounded-3xl shadow-sm p-8 md:p-12 border border-gray-100">
@@ -139,7 +150,7 @@ const OrderTracking: React.FC = () => {
           <div className="mt-8 bg-gray-50 rounded-2xl p-6 border border-gray-100">
             <h3 className="font-bold text-gray-900 mb-6 text-lg border-b border-gray-200 pb-4">Order Details</h3>
             <div className="space-y-4">
-              {order.items.map((item, idx) => (
+              {(order.items || []).map((item, idx) => (
                 <div key={idx} className="flex justify-between items-center pb-4">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-sm font-bold text-gray-700 border border-gray-200 mr-4">
@@ -147,7 +158,7 @@ const OrderTracking: React.FC = () => {
                     </div>
                     <span className="font-medium text-gray-800">{item.name}</span>
                   </div>
-                  <span className="font-semibold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="font-semibold text-gray-900">₹{(Number(item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
                 </div>
               ))}
             </div>
@@ -158,7 +169,7 @@ const OrderTracking: React.FC = () => {
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
                   <span className="font-medium">₹{(() => {
-                    const sub = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                    const sub = (order.items || []).reduce((acc, item) => acc + (Number(item.price || 0) * (item.quantity || 1)), 0);
                     return sub.toFixed(2);
                   })()}</span>
                 </div>
@@ -169,14 +180,14 @@ const OrderTracking: React.FC = () => {
                 <div className="flex justify-between text-gray-600">
                   <span>CGST (2.5%)</span>
                   <span className="font-medium">₹{(() => {
-                    const sub = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                    const sub = (order.items || []).reduce((acc, item) => acc + (Number(item.price || 0) * (item.quantity || 1)), 0);
                     return (sub * 0.025).toFixed(2);
                   })()}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>SGST (2.5%)</span>
                   <span className="font-medium">₹{(() => {
-                    const sub = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                    const sub = (order.items || []).reduce((acc, item) => acc + (Number(item.price || 0) * (item.quantity || 1)), 0);
                     return (sub * 0.025).toFixed(2);
                   })()}</span>
                 </div>
@@ -185,7 +196,7 @@ const OrderTracking: React.FC = () => {
                 <div className="flex justify-between text-gray-500 text-xs italic">
                   <span>Round Off</span>
                   <span>{(() => {
-                    const sub = order.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                    const sub = (order.items || []).reduce((acc, item) => acc + (Number(item.price || 0) * (item.quantity || 1)), 0);
                     const exact = sub + 30 + (sub * 0.05);
                     const diff = Math.ceil(exact) - exact;
                     return diff > 0 ? `+₹${diff.toFixed(2)}` : `₹0.00`;
@@ -195,7 +206,7 @@ const OrderTracking: React.FC = () => {
 
               <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
                 <span className="font-extrabold text-gray-900 text-lg">Grand Total</span>
-                <span className="font-black text-gray-900 text-xl">₹{order.total.toFixed(2)}</span>
+                <span className="font-black text-gray-900 text-xl">₹{Number(order.total || 0).toFixed(2)}</span>
               </div>
             </div>
           </div>

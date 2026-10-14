@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS categories (
     id VARCHAR(64) PRIMARY KEY DEFAULT gen_random_uuid()::text,
     name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
+    display_order INT NOT NULL DEFAULT 1,
     active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
@@ -43,7 +44,12 @@ CREATE TABLE IF NOT EXISTS food_items (
     image_url TEXT,
     available BOOLEAN NOT NULL DEFAULT TRUE,
     featured BOOLEAN NOT NULL DEFAULT FALSE,
-    food_type VARCHAR(20) NOT NULL
+    food_type VARCHAR(20) NOT NULL DEFAULT 'NONVEG',
+    rating NUMERIC(3, 1) DEFAULT 4.5,
+    prep_time INT DEFAULT 15,
+    stock INT,
+    daily_limits JSONB,
+    last_stock_reset VARCHAR(32)
 );
 
 CREATE INDEX IF NOT EXISTS idx_food_items_category ON food_items(category);
@@ -112,3 +118,37 @@ CREATE TABLE IF NOT EXISTS delivery_partners (
     phone VARCHAR(20) NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE
 );
+
+-- ============================================================================
+-- 7. OFFERS TABLE (Offer)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS offers (
+    id VARCHAR(64) PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    discount_type VARCHAR(20) NOT NULL,
+    discount_value NUMERIC(10, 2) NOT NULL,
+    min_order NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- ============================================================================
+-- 8. STORE SETTINGS TABLE (StoreSettings)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS store_settings (
+    id VARCHAR(64) PRIMARY KEY DEFAULT 'default',
+    is_open BOOLEAN NOT NULL DEFAULT TRUE,
+    reopen_date VARCHAR(64) DEFAULT '',
+    close_reason TEXT DEFAULT '',
+    close_type VARCHAR(32) NOT NULL DEFAULT 'TOTAL'
+);
+
+-- ============================================================================
+-- 9. ADMIN USERS TABLE (AdminUser)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS admin_users (
+    id VARCHAR(64) PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    username VARCHAR(64) NOT NULL UNIQUE,
+    hashed_password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+

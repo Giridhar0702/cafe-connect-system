@@ -9,6 +9,7 @@ import Cart from '../pages/Cart/CartPage';
 import Checkout from '../pages/Checkout/CheckoutPage';
 import OrderSuccess from '../pages/Orders/OrderSuccess';
 import OrderTracking from '../pages/Orders/OrderTracking';
+import Orders from '../pages/Orders/OrdersPage';
 import Profile from '../pages/Profile/ProfilePage';
 import About from '../pages/About/About';
 import AdminLayout from '../components/layout/Sidebar/AdminLayout';
@@ -67,7 +68,10 @@ function App() {
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
             <Route path="order-success/:id" element={<OrderSuccess />} />
+            <Route path="orders" element={<Orders />} />
             <Route path="orders/:id" element={<OrderTracking />} />
+            <Route path="order" element={<Orders />} />
+            <Route path="order/:id" element={<OrderTracking />} />
             <Route path="profile" element={<Profile />} />
           </Route>
           

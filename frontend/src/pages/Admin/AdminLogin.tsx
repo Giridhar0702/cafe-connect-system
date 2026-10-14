@@ -1,25 +1,30 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
+import { api } from '../../services/api';
 import { User, LogIn, AlertCircle, ShieldCheck, KeyRound } from 'lucide-react';
 
 const AdminLogin: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { setAdminLoggedIn } = useStore();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    // Mock Authentication
-    if (username === 'admin' && password === 'admin123') {
+    try {
+      await api.loginAdmin(username, password);
       setAdminLoggedIn(true);
       navigate('/admin');
-    } else {
-      setError('Invalid username or password');
+    } catch (err: any) {
+      setError(err.message || 'Invalid username or password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,9 +116,10 @@ const AdminLogin: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-2xl shadow-xl text-base font-bold text-white bg-primary-600 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-primary-500 transition-all hover:-translate-y-0.5 active:translate-y-0 mt-8 group"
+              disabled={loading}
+              className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-2xl shadow-xl text-base font-bold text-white bg-primary-600 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-primary-500 transition-all hover:-translate-y-0.5 active:translate-y-0 mt-8 group disabled:opacity-50"
             >
-              Sign In Securely
+              {loading ? 'Signing in...' : 'Sign In Securely'}
               <LogIn className="ml-2 -mr-1 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </form>

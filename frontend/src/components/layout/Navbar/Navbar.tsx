@@ -1,18 +1,20 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Search, Home, Utensils, Info } from 'lucide-react';
+import { ShoppingCart, User, Search, Home, Utensils, ShoppingBag, Info } from 'lucide-react';
 import { useStore } from '../../../store/StoreContext';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
-  const { cart } = useStore();
+  const { cart, orders } = useStore();
 
   const isActive = (path: string) => location.pathname === path;
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const activeOrdersCount = orders.filter(o => !['Delivered', 'Cancelled'].includes(o.status)).length;
 
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home className="w-5 h-5 mb-1" /> },
     { name: 'Menu', path: '/menu', icon: <Utensils className="w-5 h-5 mb-1" /> },
+    { name: 'Orders', path: '/orders', icon: <ShoppingBag className="w-5 h-5 mb-1" /> },
     { name: 'About', path: '/about', icon: <Info className="w-5 h-5 mb-1" /> },
     { name: 'Profile', path: '/profile', icon: <User className="w-5 h-5 mb-1" /> },
   ];
@@ -42,9 +44,14 @@ const Navbar: React.FC = () => {
                   isActive(link.path)
                     ? 'text-primary-600 border-b-2 border-primary-600'
                     : 'text-gray-500 hover:text-gray-900 hover:border-b-2 hover:border-gray-300'
-                } px-1 py-2 text-sm font-medium transition-colors`}
+                } px-1 py-2 text-sm font-medium transition-colors flex items-center gap-1.5`}
               >
-                {link.name}
+                <span>{link.name}</span>
+                {link.name === 'Orders' && activeOrdersCount > 0 && (
+                  <span className="bg-primary-50 text-primary-700 text-xs font-bold px-1.5 py-0.5 rounded-full border border-primary-200">
+                    {activeOrdersCount}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -109,7 +116,14 @@ const Navbar: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-900'
               }`}
             >
-              {link.icon}
+              <div className="relative flex items-center justify-center">
+                {link.icon}
+                {link.name === 'Orders' && activeOrdersCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-primary-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                    {activeOrdersCount}
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] font-medium">{link.name}</span>
             </Link>
           ))}

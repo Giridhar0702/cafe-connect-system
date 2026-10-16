@@ -217,12 +217,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .catch(err => console.warn('Could not load store status from API, using cached:', err));
   }, []);
 
-  // 2. Fetch admin data when admin logs in
+  // 2. Fetch admin data and poll for live incoming orders
   useEffect(() => {
-    if (isAdminLoggedIn) {
+    if (!isAdminLoggedIn) return;
+
+    const fetchAdminData = () => {
       api.getOrders()
         .then(fetchedOrders => {
-          if (fetchedOrders) setOrders(fetchedOrders);
+          if (fetchedOrders) {
+            setOrders(fetchedOrders);
+          }
         })
         .catch(err => console.warn('Could not load admin orders from API:', err));
 
@@ -231,7 +235,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (partners) setDeliveryPartners(partners);
         })
         .catch(err => console.warn('Could not load delivery partners from API:', err));
-    }
+    };
+
+    // Initial fetch on login
+    fetchAdminData();
+
+    // Poll every 4 seconds so new orders from customers trigger in real-time
+    const pollInterval = setInterval(fetchAdminData, 4000);
+    return () => clearInterval(pollInterval);
   }, [isAdminLoggedIn]);
 
   // Save to localStorage as secondary backup

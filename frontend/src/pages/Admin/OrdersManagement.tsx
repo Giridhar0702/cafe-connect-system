@@ -16,10 +16,16 @@ import {
 import type { Order } from '../../types';
 import { bluetoothPrinter, formatLine, formatCenter } from '../../utils/printer';
 import { PrinterManagerModal } from '../../components/admin/PrinterManagerModal';
+import { orderAlarm } from '../../utils/alarm';
 
 const OrdersManagement: React.FC = () => {
   const { orders, updateOrderStatus, deliveryPartners, adminSearchQuery } = useStore();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Silence alarm as admin is now viewing the orders page
+    orderAlarm.stopAlarm();
+  }, []);
 
   const filteredOrders = orders.filter(order => {
     if (!adminSearchQuery) return true;

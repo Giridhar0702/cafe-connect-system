@@ -1,0 +1,109 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useStore } from '../../store/StoreContext';
+
+const foodSchema = z.object({
+  name: z.string().min(2, 'Food name is required'),
+  category: z.string().min(1, 'Category is required'),
+  price: z.coerce.number().positive('Price must be greater than 0'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+  imageUrl: z.string().url('Valid image URL is required'),
+  foodType: z.enum(['VEG', 'NONVEG', 'EGG'], { message: 'Food type is required' }),
+});
+
+type FoodFormValues = z.infer<typeof foodSchema>;
+
+const AddFood: React.FC = () => {
+  const { categories, addFood } = useStore();
+  const navigate = useNavigate();
+
+  const { register, handleSubmit, formState: { errors } } = useForm<FoodFormValues>({
+    resolver: zodResolver(foodSchema) as any,
+  });
+
+  const onSubmit = (data: FoodFormValues) => {
+    const newFood = {
+      ...data,
+      id: `f${Date.now()}`,
+      available: true,
+      featured: false,
+    };
+    
+    addFood(newFood);
+    navigate('/admin/foods');
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Add New Food</h1>
+      
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Food Name</label>
+              <input {...register('name')} type="text" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <select {...register('category')} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500">
+                <option value="">Select Category</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Food Type</label>
+              <select {...register('foodType')} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500">
+                <option value="">Select Food Type</option>
+                <option value="VEG">Vegetarian (Veg)</option>
+                <option value="NONVEG">Non-Vegetarian (Non-Veg)</option>
+                <option value="EGG">Egg</option>
+              </select>
+              {errors.foodType && <p className="mt-1 text-sm text-red-600">{errors.foodType.message}</p>}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+              <input {...register('price')} type="number" step="0.01" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
+              {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>}
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea {...register('description')} rows={3} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
+              {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Food Image URL</label>
+              <input {...register('imageUrl')} type="url" placeholder="https://..." className="w-full p-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500" />
+              {errors.imageUrl && <p className="mt-1 text-sm text-red-600">{errors.imageUrl.message}</p>}
+            </div>
+
+          </div>
+
+          <div className="flex justify-end space-x-4 pt-4 border-t border-gray-100">
+
+            <button 
+              type="submit"
+              className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-500/30"
+            >
+              Add Food
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default AddFood;

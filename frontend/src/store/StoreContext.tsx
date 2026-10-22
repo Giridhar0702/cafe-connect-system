@@ -1,0 +1,406 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { FoodItem, FoodCategory, Order, CartItem, Review, Offer, DeliveryLocation, DeliveryPartner, CategoryItem } from '../types';
+import { initialFoods, initialCategories, initialOrders, initialReviews, initialOffers, initialLocations } from '../mocks/mockData';
+
+interface StoreContextType {
+  foods: FoodItem[];
+  categories: FoodCategory[];
+  categoryItems: CategoryItem[];
+  orders: Order[];
+  reviews: Review[];
+  offers: Offer[];
+  cart: CartItem[];
+  locations: DeliveryLocation[];
+  deliveryPartners: DeliveryPartner[];
+  
+  isAdminLoggedIn: boolean;
+  setAdminLoggedIn: (status: boolean) => void;
+  
+  isStoreOpen: boolean;
+  storeReopenDate: string;
+  storeCloseReason: string;
+  storeCloseType: 'TOTAL' | 'ONLINE_ONLY';
+  setStoreStatus: (isOpen: boolean, reopenDate?: string, closeReason?: string, closeType?: 'TOTAL' | 'ONLINE_ONLY') => void;
+  
+  // Actions
+  addFood: (food: FoodItem) => void;
+  updateFood: (food: FoodItem) => void;
+  deleteFood: (id: string) => void;
+  toggleFoodAvailability: (id: string) => void;
+  
+  addCategory: (category: FoodCategory) => void;
+  deleteCategory: (category: FoodCategory) => void;
+  addCategoryItem: (item: Omit<CategoryItem, 'id'>) => void;
+  updateCategoryItem: (item: CategoryItem) => void;
+  deleteCategoryItem: (id: string) => void;
+  toggleCategoryItemActive: (id: string) => void;
+  reorderCategoryItems: (newItems: CategoryItem[]) => void;
+  
+  addToCart: (food: FoodItem) => void;
+  removeFromCart: (id: string) => void;
+  updateCartQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
+  
+  placeOrder: (order: Omit<Order, 'id' | 'status' | 'date'>) => string;
+  updateOrderStatus: (id: string, status: Order['status'], deliveryManName?: string, deliveryManPhone?: string) => void;
+  
+  addOffer: (offer: Omit<Offer, 'id'>) => void;
+  toggleOfferActive: (id: string) => void;
+  deleteOffer: (id: string) => void;
+
+  addLocation: (location: Omit<DeliveryLocation, 'id'>) => void;
+  updateLocation: (location: DeliveryLocation) => void;
+  toggleLocationActive: (id: string) => void;
+  deleteLocation: (id: string) => void;
+
+  addDeliveryPartner: (partner: Omit<DeliveryPartner, 'id'>) => void;
+  updateDeliveryPartner: (partner: DeliveryPartner) => void;
+  toggleDeliveryPartnerActive: (id: string) => void;
+  deleteDeliveryPartner: (id: string) => void;
+  adminSearchQuery: string;
+  setAdminSearchQuery: (query: string) => void;
+}
+
+const StoreContext = createContext<StoreContextType | undefined>(undefined);
+
+export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  
+  const [foods, setFoods] = useState<FoodItem[]>(() => {
+    const saved = localStorage.getItem('foods');
+    const parsed = saved ? JSON.parse(saved) : null;
+    if (parsed && parsed.length >= 30) {
+      return parsed;
+    }
+    return initialFoods;
+  });
+  
+  const defaultCategoryItems: CategoryItem[] = initialCategories.map((name, index) => ({
+    id: `cat-${index + 1}`,
+    name,
+    description: `${name} items and specials`,
+    displayOrder: index + 1,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }));
+
+  const [categoryItems, setCategoryItems] = useState<CategoryItem[]>(() => {
+    const saved = localStorage.getItem('categoryItems');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return defaultCategoryItems;
+  });
+
+  const categories = categoryItems
+    .filter(c => c.isActive)
+    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .map(c => c.name);
+  
+  const [orders, setOrders] = useState<Order[]>(() => {
+    const saved = localStorage.getItem('orders');
+    return saved ? JSON.parse(saved) : initialOrders;
+  });
+  
+  const [reviews] = useState<Review[]>(() => {
+    const saved = localStorage.getItem('reviews');
+    return saved ? JSON.parse(saved) : initialReviews;
+  });
+  
+  const [offers, setOffers] = useState<Offer[]>(() => {
+    const saved = localStorage.getItem('offers');
+    return saved ? JSON.parse(saved) : initialOffers;
+  });
+  
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('cart');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [locations, setLocations] = useState<DeliveryLocation[]>(() => {
+    const saved = localStorage.getItem('locations');
+    return saved ? JSON.parse(saved) : initialLocations;
+  });
+
+  const [deliveryPartners, setDeliveryPartners] = useState<DeliveryPartner[]>(() => {
+    const saved = localStorage.getItem('deliveryPartners');
+    return saved ? JSON.parse(saved) : [
+      { id: '1', name: 'Ramesh', phone: '9876543210', active: true },
+      { id: '2', name: 'Suresh', phone: '8765432109', active: true }
+    ];
+  });
+
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('isAdminLoggedIn') === 'true';
+  });
+
+  const setAdminLoggedIn = (status: boolean) => {
+    setIsAdminLoggedIn(status);
+    localStorage.setItem('isAdminLoggedIn', String(status));
+  };
+
+  const [isStoreOpen, setIsStoreOpen] = useState<boolean>(() => {
+    const saved = localStorage.getItem('isStoreOpen');
+    return saved !== 'false';
+  });
+  
+  const [storeReopenDate, setStoreReopenDate] = useState<string>(() => {
+    return localStorage.getItem('storeReopenDate') || '';
+  });
+
+  const [storeCloseReason, setStoreCloseReason] = useState<string>(() => {
+    return localStorage.getItem('storeCloseReason') || '';
+  });
+
+  const [storeCloseType, setStoreCloseType] = useState<'TOTAL' | 'ONLINE_ONLY'>(() => {
+    const saved = localStorage.getItem('storeCloseType');
+    return (saved === 'ONLINE_ONLY') ? 'ONLINE_ONLY' : 'TOTAL';
+  });
+
+  const setStoreStatus = (isOpen: boolean, reopenDate: string = '', closeReason: string = '', closeType: 'TOTAL' | 'ONLINE_ONLY' = 'TOTAL') => {
+    setIsStoreOpen(isOpen);
+    setStoreReopenDate(reopenDate);
+    setStoreCloseReason(closeReason);
+    setStoreCloseType(closeType);
+    localStorage.setItem('isStoreOpen', String(isOpen));
+    localStorage.setItem('storeReopenDate', reopenDate);
+    localStorage.setItem('storeCloseReason', closeReason);
+    localStorage.setItem('storeCloseType', closeType);
+  };
+
+  // Save to localStorage on change
+  useEffect(() => { localStorage.setItem('foods', JSON.stringify(foods)); }, [foods]);
+  useEffect(() => { 
+    localStorage.setItem('categoryItems', JSON.stringify(categoryItems)); 
+    localStorage.setItem('categories', JSON.stringify(categories));
+  }, [categoryItems, categories]);
+  useEffect(() => { localStorage.setItem('orders', JSON.stringify(orders)); }, [orders]);
+  useEffect(() => { localStorage.setItem('reviews', JSON.stringify(reviews)); }, [reviews]);
+  useEffect(() => { localStorage.setItem('offers', JSON.stringify(offers)); }, [offers]);
+  useEffect(() => { localStorage.setItem('cart', JSON.stringify(cart)); }, [cart]);
+  useEffect(() => { localStorage.setItem('locations', JSON.stringify(locations)); }, [locations]);
+  useEffect(() => { localStorage.setItem('deliveryPartners', JSON.stringify(deliveryPartners)); }, [deliveryPartners]);
+
+  const addFood = (food: FoodItem) => setFoods([...foods, food]);
+  const updateFood = (updatedFood: FoodItem) => setFoods(foods.map(f => f.id === updatedFood.id ? updatedFood : f));
+  const deleteFood = (id: string) => setFoods(foods.filter(f => f.id !== id));
+  const toggleFoodAvailability = (id: string) => {
+    setFoods(foods.map(f => f.id === id ? { ...f, available: !f.available } : f));
+  };
+
+  const addCategoryItem = (item: Omit<CategoryItem, 'id'>) => {
+    const id = `cat-${Date.now()}`;
+    const newItem: CategoryItem = {
+      ...item,
+      id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    setCategoryItems(prev => [...prev, newItem]);
+  };
+
+  const updateCategoryItem = (updated: CategoryItem) => {
+    const existing = categoryItems.find(c => c.id === updated.id);
+    if (existing && existing.name !== updated.name) {
+      setFoods(prev => prev.map(f => f.category === existing.name ? { ...f, category: updated.name } : f));
+    }
+    setCategoryItems(prev => prev.map(c => c.id === updated.id ? { ...updated, updatedAt: new Date().toISOString() } : c));
+  };
+
+  const deleteCategoryItem = (id: string) => {
+    setCategoryItems(prev => prev.filter(c => c.id !== id));
+  };
+
+  const toggleCategoryItemActive = (id: string) => {
+    setCategoryItems(prev => prev.map(c => c.id === id ? { ...c, isActive: !c.isActive, updatedAt: new Date().toISOString() } : c));
+  };
+
+  const reorderCategoryItems = (newItems: CategoryItem[]) => {
+    const reindexed = newItems.map((item, index) => ({
+      ...item,
+      displayOrder: index + 1,
+      updatedAt: new Date().toISOString()
+    }));
+    setCategoryItems(reindexed);
+    localStorage.setItem('categoryItems', JSON.stringify(reindexed));
+  };
+
+  const addCategory = (cat: FoodCategory) => {
+    addCategoryItem({
+      name: cat,
+      description: `${cat} items`,
+      displayOrder: categoryItems.length + 1,
+      isActive: true
+    });
+  };
+
+  const deleteCategory = (cat: FoodCategory) => {
+    setCategoryItems(prev => prev.filter(c => c.name !== cat));
+  };
+
+  const addToCart = (food: FoodItem) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === food.id);
+      if (existing) {
+        return prev.map(item => item.id === food.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { ...food, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (id: string) => setCart(cart.filter(item => item.id !== id));
+  
+  const updateCartQuantity = (id: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeFromCart(id);
+      return;
+    }
+    setCart(cart.map(item => item.id === id ? { ...item, quantity } : item));
+  };
+  
+  const clearCart = () => setCart([]);
+
+  const placeOrder = (orderData: Omit<Order, 'id' | 'status' | 'date'>) => {
+    const id = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newOrder: Order = {
+      ...orderData,
+      id,
+      status: 'Placed',
+      date: new Date().toISOString()
+    };
+    
+    // Handle stock decrement and daily resets
+    const todayStr = new Date().toISOString().split('T')[0];
+    const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+    setFoods(prevFoods => prevFoods.map(food => {
+      let currentStock = food.stock;
+      let lastReset = food.lastStockReset;
+      let isAvailable = food.available;
+
+      // Reset stock if it's a new day
+      if (lastReset !== todayStr) {
+        currentStock = food.dailyLimits?.[dayName as keyof typeof food.dailyLimits];
+        lastReset = todayStr;
+        if (currentStock === 0) {
+          isAvailable = false;
+        } else if (currentStock !== undefined && currentStock > 0) {
+          isAvailable = true; // reactivate if they have stock for today
+        }
+      }
+
+      // Decrement stock for ordered items
+      const orderedItem = orderData.items.find(item => item.id === food.id);
+      if (orderedItem && currentStock != null) {
+        currentStock = Math.max(0, currentStock - orderedItem.quantity);
+        if (currentStock === 0) {
+          isAvailable = false;
+        }
+      }
+
+      return {
+        ...food,
+        stock: currentStock,
+        lastStockReset: lastReset,
+        available: isAvailable
+      };
+    }));
+
+    setOrders([newOrder, ...orders]);
+    clearCart();
+    return id;
+  };
+
+  const updateOrderStatus = (id: string, status: Order['status'], deliveryManName?: string, deliveryManPhone?: string) => {
+    setOrders(orders.map(o => o.id === id ? { 
+      ...o, 
+      status, 
+      ...(deliveryManName && { deliveryManName }),
+      ...(deliveryManPhone && { deliveryManPhone }) 
+    } : o));
+  };
+
+  const addOffer = (offerData: Omit<Offer, 'id'>) => {
+    const newOffer: Offer = {
+      ...offerData,
+      id: `OFF-${Math.random().toString(36).substr(2, 9)}`
+    };
+    setOffers([...offers, newOffer]);
+  };
+
+  const toggleOfferActive = (id: string) => {
+    setOffers(offers.map(o => o.id === id ? { ...o, active: !o.active } : o));
+  };
+
+  const deleteOffer = (id: string) => {
+    setOffers(offers.filter(o => o.id !== id));
+  };
+
+  const addLocation = (locData: Omit<DeliveryLocation, 'id'>) => {
+    const newLoc: DeliveryLocation = {
+      ...locData,
+      id: `LOC-${Math.random().toString(36).substr(2, 9)}`
+    };
+    setLocations([...locations, newLoc]);
+  };
+
+  const updateLocation = (updatedLoc: DeliveryLocation) => {
+    setLocations(locations.map(l => l.id === updatedLoc.id ? updatedLoc : l));
+  };
+
+  const toggleLocationActive = (id: string) => {
+    setLocations(locations.map(l => l.id === id ? { ...l, active: !l.active } : l));
+  };
+
+  const deleteLocation = (id: string) => {
+    setLocations(locations.filter(l => l.id !== id));
+  };
+
+  const addDeliveryPartner = (partnerData: Omit<DeliveryPartner, 'id'>) => {
+    const newPartner = { ...partnerData, id: Date.now().toString() };
+    setDeliveryPartners([...deliveryPartners, newPartner]);
+  };
+
+  const updateDeliveryPartner = (partner: DeliveryPartner) => {
+    setDeliveryPartners(deliveryPartners.map(p => p.id === partner.id ? partner : p));
+  };
+
+  const toggleDeliveryPartnerActive = (id: string) => {
+    setDeliveryPartners(deliveryPartners.map(p => p.id === id ? { ...p, active: !p.active } : p));
+  };
+
+  const deleteDeliveryPartner = (id: string) => {
+    setDeliveryPartners(deliveryPartners.filter(p => p.id !== id));
+  };
+
+  return (
+    <StoreContext.Provider value={{
+      foods, categories, categoryItems, orders, reviews, offers, cart,
+      addFood, updateFood, deleteFood, toggleFoodAvailability,
+      addCategory, deleteCategory,
+      addCategoryItem, updateCategoryItem, deleteCategoryItem, toggleCategoryItemActive, reorderCategoryItems,
+      addToCart, removeFromCart, updateCartQuantity, clearCart,
+      placeOrder, updateOrderStatus,
+      addOffer, toggleOfferActive, deleteOffer,
+      locations, addLocation, updateLocation, toggleLocationActive, deleteLocation,
+      deliveryPartners, addDeliveryPartner, updateDeliveryPartner, toggleDeliveryPartnerActive, deleteDeliveryPartner,
+      isAdminLoggedIn, setAdminLoggedIn,
+      isStoreOpen, storeReopenDate, storeCloseReason, storeCloseType, setStoreStatus,
+      adminSearchQuery, setAdminSearchQuery
+    }}>
+      {children}
+    </StoreContext.Provider>
+  );
+};
+
+export const useStore = () => {
+  const context = useContext(StoreContext);
+  if (!context) throw new Error('useStore must be used within StoreProvider');
+  return context;
+};
